@@ -5,7 +5,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
-import japanize_matplotlib
 
 # --- Matplotlib 日本語対応 ---
 # OSごとに適切なフォントを設定
@@ -120,14 +119,14 @@ else:
     st.error("データの不整合があり、補間できません。エクセルのデータを確認してください。")
 
 
-# --- 6. グラフ描画（日本語フォント修正） ---
+# --- 6. グラフ描画 ---
 fig, ax = plt.subplots(figsize=(8, 5))
-ax.scatter(temp_values, stress_values, label="元データ", color="blue", marker="o")
+ax.scatter(temp_values, stress_values, label="Original Curve", color="blue", marker="o")
 ax.plot(temp_values, stress_values, linestyle="--", color="gray", alpha=0.7)
-ax.scatter(temp_input, interpolated_value, color="red", marker="x", s=100, label="補間結果")
-ax.set_xlabel("温度 (℃)")
-ax.set_ylabel("許容引張応力 (MPa)")
-ax.set_title("線形補間による許容引張応力の推定")
+ax.scatter(temp_input, interpolated_value, color="red", marker="x", s=100, label="Linear Interpolation Result")
+ax.set_xlabel("Temp. (℃)")
+ax.set_ylabel("Allowable Tensile Stress (MPa)")
+ax.set_title("Estimation of allowable tensile stress by linear interpolation")
 ax.legend()
 ax.grid()
 st.pyplot(fig)
