@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
+import japanize_matplotlib
 
 # --- Matplotlib 日本語対応 ---
 # OSごとに適切なフォントを設定
