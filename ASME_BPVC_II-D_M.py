@@ -1,5 +1,5 @@
 import streamlit as st
-st.markdown("## 🏗️ ASME BPVC Material Data Sheet")
+st.markdown("## 📉 ASME BPVC Material Data Sheet")
 st.write("---")  # 横線を追加してセクションっぽくする
 import pandas as pd
 import numpy as np
@@ -9,8 +9,9 @@ import matplotlib.pyplot as plt
 plt.rcParams['font.family'] = 'MS Gothic'  # Windows向け（macOS/Linuxなら適宜変更）
 
 # --- 1. エクセルデータの読み込み ---
-file_path = "data.xlsx"  # エクセルファイルのパスを指定
-df = pd.read_excel(file_path, sheet_name=0)  # 1つ目のシートを読み込む
+file_path = "data.xlsx"  # エクセルファイルのパス
+df = pd.read_excel(file_path, sheet_name=0)  # メインデータ
+notes_df = pd.read_excel(file_path, sheet_name="Notes")  # Notesデータ
 
 # --- Notes データの読み込み ---
 notes_file = "notes.xlsx"
