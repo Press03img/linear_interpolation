@@ -82,6 +82,18 @@ valid_idx = ~np.isnan(stress_values)  # NaN でないインデックスを取得
 temp_values = temp_values[valid_idx]  # NaN を除外
 stress_values = stress_values[valid_idx]  # NaN を除外
 
+# --- 🔹 ここにエラーチェックを追加！ ---
+temp_values = pd.Series(temp_values).dropna()  # NaN を除去
+
+if temp_values.empty:
+    st.error("⚠️ 温度データが取得できません。エクセルのデータを確認してください。")
+else:
+    temp_input = st.number_input("温度 (℃)", 
+                                 min_value=float(min(temp_values)), 
+                                 max_value=float(max(temp_values)), 
+                                 value=float(min(temp_values)), 
+                                 step=1.0)
+
 # --- 🔹 ここで temp_input を先に定義！ ---
 temp_input = st.number_input("温度 (℃)", 
                              min_value=float(min(temp_values)), 
