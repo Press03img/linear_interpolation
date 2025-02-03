@@ -4,9 +4,17 @@ st.write("---")  # 横線を追加してセクションっぽくする
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
 
 # --- Matplotlib 日本語対応 ---
-plt.rcParams['font.family'] = 'MS Gothic'  # Windows向け（macOS/Linuxなら適宜変更）
+# OSごとに適切なフォントを設定
+import platform
+if platform.system() == "Windows":
+    plt.rcParams['font.family'] = "MS Gothic"  # Windows
+elif platform.system() == "Darwin":  # macOS
+    plt.rcParams['font.family'] = "Hiragino Maru Gothic Pro"
+else:  # Linux (Streamlit Cloudなど)
+    plt.rcParams['font.family'] = "IPAexGothic"
 
 file_path = "data.xlsx"  # `data.xlsx` に統一
 
