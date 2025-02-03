@@ -88,18 +88,14 @@ temp_values = pd.Series(temp_values).dropna()  # NaN を除去
 if temp_values.empty:
     st.error("⚠️ 温度データが取得できません。エクセルのデータを確認してください。")
 else:
-    temp_input = st.number_input("温度 (℃)", 
-                                 min_value=float(min(temp_values)), 
-                                 max_value=float(max(temp_values)), 
-                                 value=float(min(temp_values)), 
-                                 step=1.0)
-
-# --- 🔹 ここで temp_input を先に定義！ ---
-temp_input = st.number_input("温度 (℃)", 
-                             min_value=float(min(temp_values)), 
-                             max_value=float(max(temp_values)), 
-                             value=float(min(temp_values)), 
-                             step=1.0)
+    temp_input = st.number_input(
+        "温度 (℃)", 
+        min_value=float(min(temp_values)), 
+        max_value=float(max(temp_values)), 
+        value=float(min(temp_values)), 
+        step=1.0,
+        key="temp_input"  # 🔹 keyを指定して重複を防ぐ
+    )
 
 # --- 5. 線形補間を実行して即時表示 ---
 if len(temp_values) == len(stress_values):  # データ長が一致する場合のみ実行
