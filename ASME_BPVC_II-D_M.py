@@ -1,5 +1,6 @@
 import streamlit as st
-st.title("ASME BPVC Material Data Sheet")
+st.markdown("## 🏗️ ASME BPVC Material Data Sheet")
+st.write("---")  # 横線を追加してセクションっぽくする
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
