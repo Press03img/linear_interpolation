@@ -48,13 +48,6 @@ for i, col in enumerate(columns_to_filter):
     else:
         filter_values[col] = st.sidebar.selectbox(col, ["(選択してください)"], key=f"{selected_sheet}_{col}")
 
-# --- Type/Grade, Class, Size/Tck が1つしかない場合、自動で決定 ---
-for col in ["Type/Grade", "Class", "Size/Tck"]:
-    if col in filtered_df.columns:
-        unique_values = filtered_df[col].dropna().unique()
-        if len(unique_values) == 1:
-            filter_values[col] = unique_values[0]
-
 # --- データ表示 ---
 if not filtered_df.empty:
     st.subheader(f"{selected_sheet} の選択されたデータの詳細")
