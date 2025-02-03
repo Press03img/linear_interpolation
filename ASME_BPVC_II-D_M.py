@@ -4,20 +4,13 @@ st.write("---")  # 横線を追加してセクションっぽくする
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import os
-st.write("Current Directory:", os.getcwd())  # 実行ディレクトリを表示
 
 # --- Matplotlib 日本語対応 ---
 plt.rcParams['font.family'] = 'MS Gothic'  # Windows向け（macOS/Linuxなら適宜変更）
 
-# --- 1. エクセルデータの読み込み ---
-file_path = "data.xlsx"  # エクセルファイルのパス
+file_path = "data.xlsx"  # `data.xlsx` に統一
 df = pd.read_excel(file_path, sheet_name=0)  # メインデータ
-notes_df = pd.read_excel(file_path, sheet_name="Notes")  # Notesデータ
-
-# --- Notes データの読み込み ---
-notes_file = "notes.xlsx"
-notes_df = pd.read_excel(notes_file, sheet_name=0)  # 1つ目のシートを読み込む
+notes_df = pd.read_excel(file_path, sheet_name="Notes")  # "Notes" シートを読む
 
 # --- 2. サイドバーでデータをフィルタリング（選択肢を絞る） ---
 st.sidebar.title("データ選択")
