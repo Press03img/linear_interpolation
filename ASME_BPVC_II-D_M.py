@@ -33,23 +33,27 @@ filter_values = {}
 filtered_df = df.copy()
 
 for i, col in enumerate(columns_to_filter):
-    if i == 0:
-        options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
-    else:
-        prev_col = columns_to_filter[i - 1]
-        prev_value = filter_values.get(prev_col, "(選択してください)")
-        if prev_value == "(選択してください)":
+    if col in df.columns:
+        if i == 0:
             options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
         else:
-            filtered_df = filtered_df[filtered_df[prev_col] == prev_value]
-            options = ["(選択してください)"] + sorted(filtered_df[col].dropna().unique().tolist())
-    filter_values[col] = st.sidebar.selectbox(col, options, key=f"{selected_sheet}_{col}")
+            prev_col = columns_to_filter[i - 1]
+            prev_value = filter_values.get(prev_col, "(選択してください)")
+            if prev_value == "(選択してください)" or prev_col not in filtered_df.columns:
+                options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
+            else:
+                filtered_df = filtered_df[filtered_df[prev_col] == prev_value]
+                options = ["(選択してください)"] + sorted(filtered_df[col].dropna().unique().tolist())
+        filter_values[col] = st.sidebar.selectbox(col, options, key=f"{selected_sheet}_{col}")
+    else:
+        filter_values[col] = st.sidebar.selectbox(col, ["(選択してください)"], key=f"{selected_sheet}_{col}")
 
 # --- Type/Grade, Class, Size/Tck が1つしかない場合、自動で決定 ---
 for col in ["Type/Grade", "Class", "Size/Tck"]:
-    unique_values = filtered_df[col].dropna().unique()
-    if len(unique_values) == 1:
-        filter_values[col] = unique_values[0]
+    if col in filtered_df.columns:
+        unique_values = filtered_df[col].dropna().unique()
+        if len(unique_values) == 1:
+            filter_values[col] = unique_values[0]
 
 # --- データ表示 ---
 if not filtered_df.empty:
