@@ -10,15 +10,8 @@ plt.rcParams['font.family'] = 'MS Gothic'  # Windows向け（macOS/Linuxなら�
 
 file_path = "data.xlsx"  # `data.xlsx` に統一
 
-tabs = st.tabs(["Table-A", "Table-B"])
-
-with tabs[0]:
-    selected_sheet = "Table-A"
-    st.subheader("Table-A のデータ")
-
-with tabs[1]:
-    selected_sheet = "Table-B"
-    st.subheader("Table-B のデータ")
+# --- シート切り替え用のラジオボタン ---
+selected_sheet = st.radio("データシートを選択", ["Table-A", "Table-B"])
 
 df = pd.read_excel(file_path, sheet_name=selected_sheet)  # 選択されたシートを読み込む
 notes_df = pd.read_excel(file_path, sheet_name="Notes")  # "Notes" シートを読む
@@ -40,7 +33,7 @@ for i, col in enumerate(columns_to_filter):
         else:
             filtered_df = filtered_df[filtered_df[prev_col] == prev_value]
             options = ["(選択してください)"] + sorted(filtered_df[col].dropna().unique().tolist())
-    filter_values[col] = st.sidebar.selectbox(col, options)
+    filter_values[col] = st.sidebar.selectbox(col, options, key=f"{selected_sheet}_{col}")
 
 # --- Type/Grade, Class, Size/Tck が1つしかない場合、自動で決定 ---
 for col in ["Type/Grade", "Class", "Size/Tck"]:
@@ -50,7 +43,7 @@ for col in ["Type/Grade", "Class", "Size/Tck"]:
 
 # --- 3. すべての選択が完了したらデータを表示 ---
 if not filtered_df.empty:
-    st.subheader("選択されたデータの詳細")
+    st.subheader(f"{selected_sheet} の選択されたデータの詳細")
     
     # 追加情報を表形式で表示
     detail_data = {
@@ -70,10 +63,10 @@ if not filtered_df.empty:
     
     # --- Notes の詳細表示 ---
     notes_values = str(filtered_df.iloc[0, 12]).split(",")  # Notes を "," で分割
-    st.subheader("Notes の詳細")
+    st.subheader(f"{selected_sheet} の Notes の詳細")
     for note in notes_values:
         note = note.strip()
         if note in notes_df.iloc[:, 2].values:  # 3列目に存在するか確認
             note_detail = notes_df[notes_df.iloc[:, 2] == note].iloc[0, 4]  # 5列目の詳細取得
-            if st.button(note):  # クリック可能なボタンとして表示
+            if st.button(note, key=f"{selected_sheet}_{note}"):
                 st.info(f"{note}: {note_detail}")
