@@ -1,30 +1,32 @@
 import streamlit as st
-st.markdown("## 📉 ASME BPVC Material Data Sheet")
+st.markdown("## 📉 ASME BPVC Material Data Sheet 2023 Edition")
 st.write("---")  # 横線を追加してセクションっぽくする
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
+import platform
 
 # --- Matplotlib 日本語対応 ---
-# OSごとに適切なフォントを設定
-import platform
 if platform.system() == "Windows":
-    plt.rcParams['font.family'] = "MS Gothic"  # Windows
-elif platform.system() == "Darwin":  # macOS
+    plt.rcParams['font.family'] = "MS Gothic"
+elif platform.system() == "Darwin":
     plt.rcParams['font.family'] = "Hiragino Maru Gothic Pro"
-else:  # Linux (Streamlit Cloudなど)
+else:
     plt.rcParams['font.family'] = "IPAexGothic"
 
-file_path = "data.xlsx"  # `data.xlsx` に統一
+file_path = "data.xlsx"
 
 # --- シート切り替え用のラジオボタン ---
-selected_sheet = st.radio("データシートを選択", ["Table-A", "Table-B"])
+selected_sheet = st.radio("データシートを選択", ["Table-1A", "Table-4"])
 
-df = pd.read_excel(file_path, sheet_name=selected_sheet)  # 選択されたシートを読み込む
-notes_df = pd.read_excel(file_path, sheet_name="Notes")  # "Notes" シートを読む
+# シート名に応じて Notes シートを選択
+notes_sheet = "Notes-1A" if selected_sheet == "Table-1A" else "Notes-4"
 
-# --- 2. サイドバーでデータをフィルタリング（選択肢を絞る） ---
+df = pd.read_excel(file_path, sheet_name=selected_sheet)
+notes_df = pd.read_excel(file_path, sheet_name=notes_sheet)
+
+# --- サイドバーでデータをフィルタリング ---
 st.sidebar.title("データ選択")
 columns_to_filter = ["Composition", "Product", "Spec No", "Type/Grade", "Class", "Size/Tck"]
 filter_values = {}
@@ -49,11 +51,10 @@ for col in ["Type/Grade", "Class", "Size/Tck"]:
     if len(unique_values) == 1:
         filter_values[col] = unique_values[0]
 
-# --- 3. すべての選択が完了したらデータを表示 ---
+# --- データ表示 ---
 if not filtered_df.empty:
     st.subheader(f"{selected_sheet} の選択されたデータの詳細")
     
-    # 追加情報を表形式で表示
     detail_data = {
         "項目": [
             "Composition", "Product", "P-No.", "Group No.", "Min. Tensile Strength, MPa", 
@@ -70,32 +71,29 @@ if not filtered_df.empty:
     st.table(pd.DataFrame(detail_data))
     
     # --- Notes の詳細表示 ---
-    notes_values = str(filtered_df.iloc[0, 12]).split(",")  # Notes を "," で分割
+    notes_values = str(filtered_df.iloc[0, 12]).split(",")
     st.subheader(f"{selected_sheet} の Notes の詳細")
     for note in notes_values:
         note = note.strip()
-        if note in notes_df.iloc[:, 2].values:  # 3列目に存在するか確認
-            note_detail = notes_df[notes_df.iloc[:, 2] == note].iloc[0, 4]  # 5列目の詳細取得
+        if note in notes_df.iloc[:, 2].values:
+            note_detail = notes_df[notes_df.iloc[:, 2] == note].iloc[0, 4]
             if st.button(note, key=f"{selected_sheet}_{note}"):
                 st.info(f"{note}: {note_detail}")
 
-# --- 4. 温度データと許容引張応力データの取得 ---
-temp_values = filtered_df.columns[13:].astype(float)  # 14列目以降が温度
-stress_values = filtered_df.iloc[:, 13:].values  # 2D 配列のまま取得
+# --- 温度データと許容引張応力データの取得 ---
+temp_values = filtered_df.columns[13:].astype(float)
+stress_values = filtered_df.iloc[:, 13:].values
 
-# 🔹 stress_values を 1D 配列に変換する
 if stress_values.shape[0] == 1:
-    stress_values = stress_values.flatten()  # 1行だけならフラットにする
+    stress_values = stress_values.flatten()
 else:
-    stress_values = stress_values.mean(axis=0)  # 複数行ある場合は平均を取る
+    stress_values = stress_values.mean(axis=0)
 
-# 🔹 NaN を除去して、データ長を一致させる
-valid_idx = ~np.isnan(stress_values)  # NaN でないインデックスを取得
-temp_values = temp_values[valid_idx]  # NaN を除外
-stress_values = stress_values[valid_idx]  # NaN を除外
+valid_idx = ~np.isnan(stress_values)
+temp_values = temp_values[valid_idx]
+stress_values = stress_values[valid_idx]
 
-# --- 🔹 ここにエラーチェックを追加！ ---
-temp_values = pd.Series(temp_values).dropna()  # NaN を除去
+temp_values = pd.Series(temp_values).dropna()
 
 if temp_values.empty:
     st.error("⚠️ 表示に必要なデータが選択されていません。")
@@ -106,20 +104,19 @@ else:
         max_value=float(max(temp_values)), 
         value=float(min(temp_values)), 
         step=1.0,
-        key="temp_input"  # 🔹 keyを指定して重複を防ぐ
+        key="temp_input"
     )
 
-# --- 5. 線形補間を実行して即時表示 ---
+# --- 線形補間を実行 ---
 if temp_values.empty or stress_values.size == 0:
     st.error("⚠️ 補間に必要なデータが選択されていません。")
-elif len(temp_values) == len(stress_values):  # データ長が一致する場合のみ実行
+elif len(temp_values) == len(stress_values):
     interpolated_value = np.interp(temp_input, temp_values, stress_values)
     st.success(f"温度 {temp_input}℃ のときの許容引張応力: {interpolated_value:.2f} MPa")
 else:
     st.error("データの不整合があり、補間できません。エクセルのデータを確認してください。")
 
-
-# --- 6. グラフ描画 ---
+# --- グラフ描画 ---
 fig, ax = plt.subplots(figsize=(8, 5))
 ax.scatter(temp_values, stress_values, label="Original Curve", color="blue", marker="o")
 ax.plot(temp_values, stress_values, linestyle="--", color="gray", alpha=0.7)
