@@ -86,7 +86,7 @@ stress_values = stress_values[valid_idx]  # NaN を除外
 temp_values = pd.Series(temp_values).dropna()  # NaN を除去
 
 if temp_values.empty:
-    st.error("⚠️ 温度データが取得できません。エクセルのデータを確認してください。")
+    st.error("⚠️ 表示に必要なデータが選択されていません。")
 else:
     temp_input = st.number_input(
         "温度 (℃)", 
@@ -98,11 +98,14 @@ else:
     )
 
 # --- 5. 線形補間を実行して即時表示 ---
-if len(temp_values) == len(stress_values):  # データ長が一致する場合のみ実行
+if temp_values.empty or stress_values.size == 0:
+    st.error("⚠️ 補間に必要なデータが選択されていません。")
+elif len(temp_values) == len(stress_values):  # データ長が一致する場合のみ実行
     interpolated_value = np.interp(temp_input, temp_values, stress_values)
     st.success(f"温度 {temp_input}℃ のときの許容引張応力: {interpolated_value:.2f} MPa")
 else:
     st.error("データの不整合があり、補間できません。エクセルのデータを確認してください。")
+
 
 # --- 6. グラフ描画（日本語フォント修正） ---
 fig, ax = plt.subplots(figsize=(8, 5))
