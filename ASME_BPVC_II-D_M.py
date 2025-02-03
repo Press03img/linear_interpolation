@@ -4,6 +4,8 @@ st.write("---")  # 横線を追加してセクションっぽくする
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+st.write("Current Directory:", os.getcwd())  # 実行ディレクトリを表示
 
 # --- Matplotlib 日本語対応 ---
 plt.rcParams['font.family'] = 'MS Gothic'  # Windows向け（macOS/Linuxなら適宜変更）
