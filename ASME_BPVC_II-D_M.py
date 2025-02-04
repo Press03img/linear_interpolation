@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 st.markdown("## 📉 ASME BPVC Material Data Sheet")
-# --- 注記の追加 ---
+# --- 1. エディション情報の表示 ---
 edition_df = pd.read_excel("data.xlsx", sheet_name="Edition", header=None)
 st.write(f"#### {edition_df.iloc[0, 0]}")
 st.write(f"#### {edition_df.iloc[1, 0]}")
@@ -12,14 +12,14 @@ st.write(f"#### {edition_df.iloc[2, 0]}")
 
 st.write("---")  # 横線を追加してセクションっぽくする
 
-# --- Matplotlib 日本語対応 ---
+# --- 2. Matplotlib 日本語対応 ---
 plt.rcParams['font.family'] = 'MS Gothic'  # Windows向け（macOS/Linuxなら適宜変更）
 
 file_path = "data.xlsx"  # `data.xlsx` に統一
 df = pd.read_excel(file_path, sheet_name="Table-1A")  # メインデータ
 notes_df = pd.read_excel(file_path, sheet_name="Notes-1A")  # "Notes" シートを読む
 
-# --- 2. サイドバーでデータをフィルタリング（選択肢を絞る） ---
+# --- 3. サイドバーでデータをフィルタリング（選択肢を絞る） ---
 st.sidebar.title("データ選択")
 st.sidebar.write("ℹ️ 注意\nSpec Noで複数のデータがある場合、許容引張応力は平均値が表示されます。全て選択して値を確認してください。")
 
@@ -40,7 +40,7 @@ for i, col in enumerate(columns_to_filter):
             options = ["(選択してください)"] + sorted(filtered_df[col].dropna().unique().tolist())
     filter_values[col] = st.sidebar.selectbox(col, options)
 
-# --- 3. すべての選択が完了したらデータを表示 ---
+# --- 4. 選択されたデータの詳細を表形式で表示 ---
 if not filtered_df.empty:
     st.subheader("選択されたデータの詳細")
     
@@ -63,12 +63,12 @@ if not filtered_df.empty:
         detail_data.style.set_table_styles([
             {"selector": "th", "props": [("text-align", "center")]},
             {"selector": "td:nth-child(1)", "props": [("text-align", "center")]},
-            {"selector": "td:nth-child(3)", "props": [("text-align", "center")]}])
-        .hide(axis="index")
-        .to_html(),
+            {"selector": "td:nth-child(3)", "props": [("text-align", "center")]}
+        ]).hide(axis="index").to_html(),
         unsafe_allow_html=True
     )
-    st.table(pd.DataFrame(detail_data))
+    
+    st.table(detail_data)
 
     # --- Notes の詳細表示 ---
     notes_values = str(filtered_df.iloc[0, 12]).split(",")  # Notes を "," で分割
@@ -80,7 +80,7 @@ if not filtered_df.empty:
             if st.button(note):  # クリック可能なボタンとして表示
                 st.info(f"{note}: {note_detail}")
 
-# --- 4. 温度データと許容引張応力データの取得（フィルタ適用後） ---
+# --- 5. 温度データと許容引張応力データの取得（フィルタ適用後） ---
 if not filtered_df.empty:
     temp_values = filtered_df.columns[13:].astype(float)
     stress_values = filtered_df.iloc[:, 13:].values  # 2D 配列のまま取得
@@ -123,7 +123,7 @@ else:
         key="temp_input"  # 🔹 keyを指定して重複を防ぐ
     )
 
-# --- 5. 線形補間を実行して即時表示 ---
+# --- 6. 線形補間を実行して即時表示 ---
 if temp_values.empty or stress_values.size == 0:
     st.error("⚠️ 補間に必要なデータが選択されていません。")
 elif len(temp_values) == len(stress_values):  # データ長が一致する場合のみ実行
@@ -133,7 +133,7 @@ else:
     st.error("データの不整合があり、補間できません。エクセルのデータを確認してください。")
 
 
-# --- 6. グラフ描画（日本語フォント修正） ---
+# --- 7. グラフ描画（日本語フォント修正） ---
 fig, ax = plt.subplots(figsize=(8, 5))
 ax.scatter(temp_values, stress_values, label="Original Curve", color="blue", marker="o")
 ax.plot(temp_values, stress_values, linestyle="--", color="gray", alpha=0.7)
