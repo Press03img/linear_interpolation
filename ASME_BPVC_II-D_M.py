@@ -15,9 +15,15 @@ st.write("---")  # 横線を追加してセクションっぽくする
 # --- 2. Matplotlib 日本語対応 ---
 plt.rcParams['font.family'] = 'MS Gothic'  # Windows向け（macOS/Linuxなら適宜変更）
 
-file_path = "data.xlsx"  # `data.xlsx` に統一
-df = pd.read_excel(file_path, sheet_name="Table-1A")  # メインデータ
-notes_df = pd.read_excel(file_path, sheet_name="Notes-1A")  # "Notes" シートを読む
+# --- 1. ラジオボタンでデータシートを選択 ---
+st.markdown("## \ud83d\udcc9 ASME BPVC Material Data Sheet")
+selected_sheet = st.radio("データシートを選択", ["Table-1A", "Table-4"], index=0)
+
+# --- 2. 選択されたシートのデータを読み込み ---
+file_path = "data.xlsx"
+df = pd.read_excel(file_path, sheet_name=selected_sheet)
+notes_sheet = "Notes-1A" if selected_sheet == "Table-1A" else "Notes-4"
+notes_df = pd.read_excel(file_path, sheet_name=notes_sheet)
 
 # --- 3. サイドバーでデータをフィルタリング（選択肢を絞る） ---
 st.sidebar.title("データ選択")
