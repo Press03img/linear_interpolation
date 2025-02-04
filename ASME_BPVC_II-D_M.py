@@ -68,8 +68,8 @@ stress_values = filtered_df.iloc[:, 13:].values  # 2D 配列のまま取得
 # 🔹 stress_values を 1D 配列に変換する
 if stress_values.shape[0] == 1:
     stress_values = stress_values.flatten()  # 1行だけならフラットにする
-else:
-    stress_values = stress_values.mean(axis=0)  # 複数行ある場合は平均を取る
+elif stress_values.shape[0] > 1:
+    stress_values = stress_values[0]  # 最初の一致した行のデータを使用
 
 # 🔹 NaN を除去して、データ長を一致させる
 valid_idx = ~np.isnan(stress_values)  # NaN でないインデックスを取得
