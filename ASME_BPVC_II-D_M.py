@@ -1,9 +1,15 @@
 import streamlit as st
-st.markdown("## 📉 ASME BPVC Material Data Sheet")
-st.write("---")  # 横線を追加してセクションっぽくする
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+
+st.markdown("## 📉 ASME BPVC Material Data Sheet")
+# --- 注記の追加 ---
+edition_df = pd.read_excel("data.xlsx", sheet_name="Edition", header=None)
+st.write(f"### {edition_df.iloc[0, 0]}")
+st.write(f"### {edition_df.iloc[1, 0]}")
+
+st.write("---")  # 横線を追加してセクションっぽくする
 
 # --- Matplotlib 日本語対応 ---
 plt.rcParams['font.family'] = 'MS Gothic'  # Windows向け（macOS/Linuxなら適宜変更）
@@ -14,6 +20,8 @@ notes_df = pd.read_excel(file_path, sheet_name="Notes-1A")  # "Notes" シート�
 
 # --- 2. サイドバーでデータをフィルタリング（選択肢を絞る） ---
 st.sidebar.title("データ選択")
+st.sidebar.write("ℹ️ Spec Noで複数のデータがある場合、許容引張応力は平均値が反映されます。Size/Tckまで選択して値を確認してください。")
+
 columns_to_filter = ["Composition", "Product", "Spec No", "Type/Grade", "Class", "Size/Tck"]
 filter_values = {}
 filtered_df = df.copy()
