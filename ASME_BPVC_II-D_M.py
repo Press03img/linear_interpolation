@@ -59,13 +59,14 @@ if not filtered_df.empty:
         ]
     })
     
-    st.markdown(
-        detail_data.style.set_table_styles([
-            {"selector": "table", "props": [("width", "100%"), ("table-layout", "fixed")]},
-            {"selector": "th, td", "props": [("text-align", "center"), ("width", "33.33%")]}
-        ]).hide(axis="index").to_html(),
-        unsafe_allow_html=True
-    )
+st.markdown(
+    detail_data.style.set_table_styles([
+        {"selector": "table", "props": [("width", "100%"), ("table-layout", "fixed")]},
+        {"selector": "th", "props": [("text-align", "center"), ("width", "70%")]},
+        {"selector": "td", "props": [("text-align", "center"), ("width", "30%")]}
+    ]).hide(axis="index").to_html(),
+    unsafe_allow_html=True
+)
 
 
     # --- Notes の詳細表示 ---
