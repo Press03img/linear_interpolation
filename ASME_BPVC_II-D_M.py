@@ -62,7 +62,7 @@ if not filtered_df.empty:
     st.markdown(
         detail_data.style.set_table_styles([
             {"selector": "table", "props": [("width", "200%"), ("table-layout", "fixed")]},
-            {"selector": "th", "props": [("text-align", "center"), ("width", "80%")]},
+            {"selector": "th", "props": [("text-align", "center"), ("width", "40%")]},
             {"selector": "td:nth-child(2)", "props": [("text-align", "center")]},
         ]).hide(axis="index").to_html(),
         unsafe_allow_html=True
