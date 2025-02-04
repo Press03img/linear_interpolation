@@ -4,41 +4,39 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 st.markdown("## 📉 ASME BPVC Material Data Sheet")
+
 # --- 1. エディション情報の表示 ---
 edition_df = pd.read_excel("data.xlsx", sheet_name="Edition", header=None)
 st.write(f"#### {edition_df.iloc[0, 0]}")
 st.write(f"##### {edition_df.iloc[1, 0]}")
 st.write(f"##### {edition_df.iloc[2, 0]}")
 
-st.write("---")  # 横線を追加してセクションっぽくする
+st.write("---")
 
 # --- 2. Matplotlib 日本語対応 ---
-plt.rcParams['font.family'] = 'MS Gothic'  # Windows向け（macOS/Linuxなら適宜変更）
+plt.rcParams['font.family'] = 'MS Gothic'
 
-file_path = "data.xlsx"  # `data.xlsx` に統一
-df = pd.read_excel(file_path, sheet_name="Table-1A")  # メインデータ
-notes_df = pd.read_excel(file_path, sheet_name="Notes-1A")  # "Notes" シートを読む
+# --- 2.5. データセットの選択 ---
+sheet_selection = st.radio("データセット選択", ["Table-1A", "Table-4"], index=0)
+file_path = "data.xlsx"
 
-# --- 3. サイドバーでデータをフィルタリング（選択肢を絞る） ---
+df = pd.read_excel(file_path, sheet_name=sheet_selection)  # メインデータ
+notes_sheet = "Notes-1A" if sheet_selection == "Table-1A" else "Notes-4"
+notes_df = pd.read_excel(file_path, sheet_name=notes_sheet)
+
+# --- 3. サイドバーでデータをフィルタリング ---
 st.sidebar.title("データ選択")
-st.sidebar.write("ℹ️ 注意  \n Spec Noで複数のデータがある場合、許容引張応力は平均値が表示されます。全て選択して値を確認してください。")
+st.sidebar.write("ℹ️ 注意 \n Spec Noで複数のデータがある場合、許容引張応力は平均値が表示されます。")
 
 columns_to_filter = ["Composition", "Product", "Spec No", "Type/Grade", "Class", "Size/Tck"]
 filter_values = {}
 filtered_df = df.copy()
 
 for i, col in enumerate(columns_to_filter):
-    if i == 0:
-        options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
-    else:
-        prev_col = columns_to_filter[i - 1]
-        prev_value = filter_values.get(prev_col, "(選択してください)")
-        if prev_value == "(選択してください)":
-            options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
-        else:
-            filtered_df = filtered_df[filtered_df[prev_col] == prev_value]
-            options = ["(選択してください)"] + sorted(filtered_df[col].dropna().unique().tolist())
+    options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
     filter_values[col] = st.sidebar.selectbox(col, options)
+    if filter_values[col] != "(選択してください)":
+        filtered_df = filtered_df[filtered_df[col] == filter_values[col]]
 
 # --- 4. 選択されたデータの詳細を表形式で表示 ---
 if not filtered_df.empty:
