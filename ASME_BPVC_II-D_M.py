@@ -15,46 +15,40 @@ st.write("---")  # 横線を追加してセクションっぽくする
 # --- 2. Matplotlib 日本語対応 ---
 plt.rcParams['font.family'] = 'MS Gothic'  # Windows向け（macOS/Linuxなら適宜変更）
 
-file_path = "data.xlsx"  # `data.xlsx` に統一
-df = pd.read_excel(file_path, sheet_name="Table-1A")  # メインデータ
-notes_df = pd.read_excel(file_path, sheet_name="Notes-1A")  # "Notes" シートを読む
+# --- 2. ラジオボタンでシートを選択 ---
+st.sidebar.title("データシート選択")
+sheet_selection = st.sidebar.radio("シートを選択してください", ["Table-1A", "Table-4"])
 
-# --- 3. サイドバーでデータをフィルタリング（選択肢を絞る） ---
+# 選択したシートに応じてデータをロード
+file_path = "data.xlsx"
+df = pd.read_excel(file_path, sheet_name=sheet_selection)
+notes_sheet = "Notes-1A" if sheet_selection == "Table-1A" else "Notes-4"
+notes_df = pd.read_excel(file_path, sheet_name=notes_sheet)
+
+# --- 3. サイドバーでデータをフィルタリング ---
 st.sidebar.title("データ選択")
-st.sidebar.write("ℹ️ 注意  \n Spec Noで複数のデータがある場合、許容引張応力は平均値が表示されます。全て選択して値を確認してください。")
+st.sidebar.write("ℹ️ 注意 \n Spec Noで複数のデータがある場合、許容引張応力は平均値が表示されます。全て選択して値を確認してください。")
 
 columns_to_filter = ["Composition", "Product", "Spec No", "Type/Grade", "Class", "Size/Tck"]
 filter_values = {}
 filtered_df = df.copy()
 
 for i, col in enumerate(columns_to_filter):
-    if i == 0:
-        options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
-    else:
-        prev_col = columns_to_filter[i - 1]
-        prev_value = filter_values.get(prev_col, "(選択してください)")
-        if prev_value == "(選択してください)":
-            options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
-        else:
-            filtered_df = filtered_df[filtered_df[prev_col] == prev_value]
-            options = ["(選択してください)"] + sorted(filtered_df[col].dropna().unique().tolist())
+    options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
     filter_values[col] = st.sidebar.selectbox(col, options)
+    if filter_values[col] != "(選択してください)":
+        filtered_df = filtered_df[filtered_df[col] == filter_values[col]]
 
 # --- 4. 選択されたデータの詳細を表形式で表示 ---
 if not filtered_df.empty:
-    st.subheader("選択されたデータの詳細")
-    
-    # 追加情報を表形式で表示（中央揃え & 幅調整）
+    st.subheader(f"選択されたデータの詳細 ({sheet_selection})")
     detail_data = pd.DataFrame({
-        "項目": [
-            "Composition", "Product", "P-No.", "Group No.", "Min. Tensile Strength, MPa", 
-            "Min. Yield Strength, MPa", "VIII-1—Applic. and Max. Temp. Limit (°C)　　　　　　　　　　　", 
-            "External Pressure Chart No.", "Notes"
-        ],
+        "項目": ["Composition", "Product", "P-No.", "Group No.", "Min. Tensile Strength, MPa", 
+                "Min. Yield Strength, MPa", "VIII-1—Applic. and Max. Temp. Limit (°C)", 
+                "External Pressure Chart No.", "Notes"],
         "値": [
-            filtered_df["Composition"].iloc[0], filtered_df["Product"].iloc[0], 
-            filtered_df.iloc[0, 6], filtered_df.iloc[0, 7], filtered_df.iloc[0, 8], 
-            filtered_df.iloc[0, 9], filtered_df.iloc[0, 10], filtered_df.iloc[0, 11], 
+            filtered_df.iloc[0, 0], filtered_df.iloc[0, 1], filtered_df.iloc[0, 6], filtered_df.iloc[0, 7],
+            filtered_df.iloc[0, 8], filtered_df.iloc[0, 9], filtered_df.iloc[0, 10], filtered_df.iloc[0, 11],
             filtered_df.iloc[0, 12]
         ]
     })
@@ -67,15 +61,15 @@ if not filtered_df.empty:
         ]).hide(axis="index").to_html(),
         unsafe_allow_html=True
     )
-
+    
     # --- Notes の詳細表示 ---
-    notes_values = str(filtered_df.iloc[0, 12]).split(",")  # Notes を "," で分割
-    st.subheader("Notes の詳細")
+    st.subheader(f"Notes の詳細 ({notes_sheet})")
+    notes_values = str(filtered_df.iloc[0, 12]).split(",")
     for note in notes_values:
         note = note.strip()
-        if note in notes_df.iloc[:, 2].values:  # 3列目に存在するか確認
-            note_detail = notes_df[notes_df.iloc[:, 2] == note].iloc[0, 4]  # 5列目の詳細取得
-            if st.button(note):  # クリック可能なボタンとして表示
+        if note in notes_df.iloc[:, 2].values:
+            note_detail = notes_df[notes_df.iloc[:, 2] == note].iloc[0, 4]
+            if st.button(note):
                 st.info(f"{note}: {note_detail}")
 
 # --- 5. 温度データと許容引張応力データの取得（フィルタ適用後） ---
