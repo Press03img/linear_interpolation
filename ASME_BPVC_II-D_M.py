@@ -61,15 +61,28 @@ if not filtered_df.empty:
             if st.button(note):  # クリック可能なボタンとして表示
                 st.info(f"{note}: {note_detail}")
 
-# --- 4. 温度データと許容引張応力データの取得 ---
-temp_values = filtered_df.columns[13:].astype(float)  # 14列目以降が温度
-stress_values = filtered_df.iloc[:, 13:].values  # 2D 配列のまま取得
+# --- 4. 温度データと許容引張応力データの取得（フィルタ適用後） ---
+if not filtered_df.empty:
+    temp_values = filtered_df.columns[13:].astype(float)
+    stress_values = filtered_df.iloc[:, 13:].values  # 2D 配列のまま取得
 
-# 🔹 stress_values を 1D 配列に変換する
-if stress_values.shape[0] == 1:
-    stress_values = stress_values.flatten()  # 1行だけならフラットにする
-elif stress_values.shape[0] > 1:
-    stress_values = stress_values[0]  # 最初の一致した行のデータを使用
+    # 🔹 選択データのうち、Type/Grade、Class、Size/Tck すべてが選択されている場合のみ適用
+    if all(filter_values[col] != "(選択してください)" for col in ["Type/Grade", "Class", "Size/Tck"]):
+        selected_df = filtered_df[
+            (filtered_df["Type/Grade"] == filter_values["Type/Grade"]) &
+            (filtered_df["Class"] == filter_values["Class"]) &
+            (filtered_df["Size/Tck"] == filter_values["Size/Tck"])
+        ]
+    else:
+        selected_df = filtered_df
+
+    # 🔹 stress_values を 1D 配列に変換する
+    if not selected_df.empty:
+        stress_values = selected_df.iloc[:, 13:].values  # 2D 配列のまま取得
+        if stress_values.shape[0] == 1:
+            stress_values = stress_values.flatten()
+        elif stress_values.shape[0] > 1:
+            stress_values = np.mean(stress_values, axis=0)  # 平均を取る
 
 # 🔹 NaN を除去して、データ長を一致させる
 valid_idx = ~np.isnan(stress_values)  # NaN でないインデックスを取得
