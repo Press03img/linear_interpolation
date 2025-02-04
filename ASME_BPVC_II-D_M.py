@@ -44,8 +44,8 @@ for i, col in enumerate(columns_to_filter):
 if not filtered_df.empty:
     st.subheader("選択されたデータの詳細")
     
-    # 追加情報を表形式で表示
-    detail_data = {
+    # 追加情報を表形式で表示（中央揃え）
+    detail_data = pd.DataFrame({
         "項目": [
             "Composition", "Product", "P-No.", "Group No.", "Min. Tensile Strength, MPa", 
             "Min. Yield Strength, MPa", "VIII-1—Applic. and Max. Temp. Limit (°C)", 
@@ -57,11 +57,19 @@ if not filtered_df.empty:
             filtered_df.iloc[0, 9], filtered_df.iloc[0, 10], filtered_df.iloc[0, 11], 
             filtered_df.iloc[0, 12]
         ]
-    }
+    })
+    
+    st.markdown(
+        detail_data.style.set_table_styles([
+            {"selector": "th", "props": [("text-align", "center")]},
+            {"selector": "td:nth-child(1)", "props": [("text-align", "center")]},
+            {"selector": "td:nth-child(3)", "props": [("text-align", "center")]}])
+        .hide(axis="index")
+        .to_html(),
+        unsafe_allow_html=True
+    )
     st.table(pd.DataFrame(detail_data))
-    styled = df.style.set_properties(**{'text-align':'center'}, subset = ['A1','B'])
-    styled
-        
+
     # --- Notes の詳細表示 ---
     notes_values = str(filtered_df.iloc[0, 12]).split(",")  # Notes を "," で分割
     st.subheader("Notes の詳細")
