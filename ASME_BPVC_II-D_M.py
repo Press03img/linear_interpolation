@@ -63,7 +63,7 @@ if not filtered_df.empty:
         detail_data.style.set_table_styles([
             {"selector": "table", "props": [("width", "100%"), ("table-layout", "fixed")]},
             {"selector": "th", "props": [("text-align", "center")]},
-            {"selector": "td:nth-child(2)", "props": [("text-align", "center")]},
+            {"selector": "td:nth-child(2)", "props": [("text-align", "center"), ("width", "30%")]},
         ]).hide(axis="index").to_html(),
         unsafe_allow_html=True
     )
