@@ -48,7 +48,7 @@ if not filtered_df.empty:
     detail_data = pd.DataFrame({
         "項目": [
             "Composition", "Product", "P-No.", "Group No.", "Min. Tensile Strength, MPa", 
-            "Min. Yield Strength, MPa", "VIII-1—Applic. and Max. Temp. Limit (°C)", 
+            "Min. Yield Strength, MPa", "VIII-1—Applic. and Max. Temp. Limit (°C)           ", 
             "External Pressure Chart No.", "Notes"
         ],
         "値": [
