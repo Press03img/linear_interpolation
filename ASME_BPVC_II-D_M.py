@@ -109,12 +109,12 @@ stress_values = stress_values[valid_idx]  # NaN を除外
 
 # --- 🔹 ここにエラーチェックを追加！ ---
 temp_values = pd.Series(temp_values).dropna()  # NaN を除去
-
+st.subheader("設計温度と線形補間")
 if temp_values.empty:
     st.error("⚠️ 表示に必要なデータが選択されていません。")
 else:
     temp_input = st.number_input(
-        "温度 (℃)", 
+        "設計温度 (℃)", 
         min_value=float(min(temp_values)), 
         max_value=float(max(temp_values)), 
         value=float(min(temp_values)), 
