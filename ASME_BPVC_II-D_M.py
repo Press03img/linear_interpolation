@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 st.markdown("## 📉 ASME BPVC Material Data Sheet")
 # --- 注記の追加 ---
 edition_df = pd.read_excel("data.xlsx", sheet_name="Edition", header=None)
-st.write(f"### {edition_df.iloc[0, 0]}")
-st.write(f"### {edition_df.iloc[1, 0]}")
+st.write(f"#### {edition_df.iloc[0, 0]}")
+st.write(f"#### {edition_df.iloc[1, 0]}")
+st.write(f"#### {edition_df.iloc[2, 0]}")
 
 st.write("---")  # 横線を追加してセクションっぽくする
 
@@ -20,7 +21,7 @@ notes_df = pd.read_excel(file_path, sheet_name="Notes-1A")  # "Notes" シート�
 
 # --- 2. サイドバーでデータをフィルタリング（選択肢を絞る） ---
 st.sidebar.title("データ選択")
-st.sidebar.write("ℹ️ Spec Noで複数のデータがある場合、許容引張応力は平均値が反映されます。Size/Tckまで選択して値を確認してください。")
+st.sidebar.write("ℹ️ 注意\nSpec Noで複数のデータがある場合、許容引張応力は平均値が表示されます。全て選択して値を確認してください。")
 
 columns_to_filter = ["Composition", "Product", "Spec No", "Type/Grade", "Class", "Size/Tck"]
 filter_values = {}
@@ -58,7 +59,9 @@ if not filtered_df.empty:
         ]
     }
     st.table(pd.DataFrame(detail_data))
-    
+    styled = df.style.set_properties(**{'text-align':'center'}, subset = ['A1','B'])
+    styled
+        
     # --- Notes の詳細表示 ---
     notes_values = str(filtered_df.iloc[0, 12]).split(",")  # Notes を "," で分割
     st.subheader("Notes の詳細")
