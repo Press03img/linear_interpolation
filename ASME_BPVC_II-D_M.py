@@ -44,7 +44,7 @@ for i, col in enumerate(columns_to_filter):
 if not filtered_df.empty:
     st.subheader("選択されたデータの詳細")
     
-    # 追加情報を表形式で表示（中央揃え）
+    # 追加情報を表形式で表示（中央揃え & 幅調整）
     detail_data = pd.DataFrame({
         "項目": [
             "Composition", "Product", "P-No.", "Group No.", "Min. Tensile Strength, MPa", 
@@ -62,8 +62,8 @@ if not filtered_df.empty:
     st.markdown(
         detail_data.style.set_table_styles([
             {"selector": "th", "props": [("text-align", "center")]},
-            {"selector": "td:nth-child(1)", "props": [("text-align", "center")]},
-            {"selector": "td:nth-child(3)", "props": [("text-align", "center")]}
+            {"selector": "td:nth-child(2)", "props": [("text-align", "center")]},
+            {"selector": "table", "props": [("width", "100%")]}
         ]).hide(axis="index").to_html(),
         unsafe_allow_html=True
     )
