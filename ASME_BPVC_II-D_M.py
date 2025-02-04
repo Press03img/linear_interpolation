@@ -61,13 +61,12 @@ if not filtered_df.empty:
     
     st.markdown(
         detail_data.style.set_table_styles([
-            {"selector": "th", "props": [("text-align", "center")], ("width", "80%")},
+            {"selector": "table", "props": [("width", "200%"), ("table-layout", "fixed")]},
+            {"selector": "th", "props": [("text-align", "center"), ("width", "80%")]},
             {"selector": "td:nth-child(2)", "props": [("text-align", "center")]},
-            {"selector": "table", "props": [("width", "200%"), ("table-layout", "fixed")]} 
         ]).hide(axis="index").to_html(),
         unsafe_allow_html=True
     )
-
 
     # --- Notes の詳細表示 ---
     notes_values = str(filtered_df.iloc[0, 12]).split(",")  # Notes を "," で分割
