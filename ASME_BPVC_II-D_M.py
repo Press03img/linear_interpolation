@@ -67,8 +67,7 @@ if not filtered_df.empty:
         ]).hide(axis="index").to_html(),
         unsafe_allow_html=True
     )
-    
-    st.table(detail_data)
+
 
     # --- Notes の詳細表示 ---
     notes_values = str(filtered_df.iloc[0, 12]).split(",")  # Notes を "," で分割
