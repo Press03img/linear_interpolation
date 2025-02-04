@@ -20,9 +20,9 @@ plt.rcParams['font.family'] = 'MS Gothic'
 sheet_selection = st.radio("データセット選択", ["Table-1A", "Table-4"], index=0)
 file_path = "data.xlsx"
 
-df = pd.read_excel(file_path, sheet_name=sheet_selection)  # メインデータ
+df = pd.read_excel(file_path, sheet_name=sheet_selection) if sheet_selection else pd.DataFrame()
 notes_sheet = "Notes-1A" if sheet_selection == "Table-1A" else "Notes-4"
-notes_df = pd.read_excel(file_path, sheet_name=notes_sheet)
+notes_df = pd.read_excel(file_path, sheet_name=notes_sheet) if sheet_selection else pd.DataFrame()
 
 # --- 3. サイドバーでデータをフィルタリング ---
 st.sidebar.title("データ選択")
@@ -30,30 +30,35 @@ st.sidebar.write("ℹ️ 注意 \n Spec Noで複数のデータがある場合�
 
 columns_to_filter = ["Composition", "Product", "Spec No", "Type/Grade", "Class", "Size/Tck"]
 filter_values = {}
-filtered_df = df.copy()
+filtered_df = df.copy() if not df.empty else pd.DataFrame()
 
 for i, col in enumerate(columns_to_filter):
-    options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
+    if col in df.columns:
+        options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
+    else:
+        options = ["(選択してください)"]
     filter_values[col] = st.sidebar.selectbox(col, options)
-    if filter_values[col] != "(選択してください)":
+    if filter_values[col] != "(選択してください)" and col in filtered_df.columns:
         filtered_df = filtered_df[filtered_df[col] == filter_values[col]]
 
 # --- 4. 選択されたデータの詳細を表形式で表示 ---
 if not filtered_df.empty:
     st.subheader("選択されたデータの詳細")
-    
-    # 追加情報を表形式で表示（中央揃え & 幅調整）
     detail_data = pd.DataFrame({
         "項目": [
             "Composition", "Product", "P-No.", "Group No.", "Min. Tensile Strength, MPa", 
-            "Min. Yield Strength, MPa", "VIII-1—Applic. and Max. Temp. Limit (°C)　　　　　　　　　　　", 
+            "Min. Yield Strength, MPa", "VIII-1—Applic. and Max. Temp. Limit (°C)", 
             "External Pressure Chart No.", "Notes"
         ],
         "値": [
-            filtered_df["Composition"].iloc[0], filtered_df["Product"].iloc[0], 
-            filtered_df.iloc[0, 6], filtered_df.iloc[0, 7], filtered_df.iloc[0, 8], 
-            filtered_df.iloc[0, 9], filtered_df.iloc[0, 10], filtered_df.iloc[0, 11], 
-            filtered_df.iloc[0, 12]
+            filtered_df["Composition"].iloc[0], filtered_df["Product"].iloc[0],
+            filtered_df.iloc[0, 6] if len(filtered_df) > 0 else "N/A", 
+            filtered_df.iloc[0, 7] if len(filtered_df) > 0 else "N/A", 
+            filtered_df.iloc[0, 8] if len(filtered_df) > 0 else "N/A", 
+            filtered_df.iloc[0, 9] if len(filtered_df) > 0 else "N/A", 
+            filtered_df.iloc[0, 10] if len(filtered_df) > 0 else "N/A", 
+            filtered_df.iloc[0, 11] if len(filtered_df) > 0 else "N/A", 
+            filtered_df.iloc[0, 12] if len(filtered_df) > 0 else "N/A"
         ]
     })
     
@@ -67,13 +72,13 @@ if not filtered_df.empty:
     )
 
     # --- Notes の詳細表示 ---
-    notes_values = str(filtered_df.iloc[0, 12]).split(",")  # Notes を "," で分割
+    notes_values = str(filtered_df.iloc[0, 12]).split(",") if len(filtered_df) > 0 else []
     st.subheader("Notes の詳細")
     for note in notes_values:
         note = note.strip()
-        if note in notes_df.iloc[:, 2].values:  # 3列目に存在するか確認
-            note_detail = notes_df[notes_df.iloc[:, 2] == note].iloc[0, 4]  # 5列目の詳細取得
-            if st.button(note):  # クリック可能なボタンとして表示
+        if not notes_df.empty and note in notes_df.iloc[:, 2].values:
+            note_detail = notes_df[notes_df.iloc[:, 2] == note].iloc[0, 4]
+            if st.button(note):
                 st.info(f"{note}: {note_detail}")
 
 # --- 5. 温度データと許容引張応力データの取得（フィルタ適用後） ---
