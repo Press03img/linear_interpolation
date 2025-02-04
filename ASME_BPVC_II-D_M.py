@@ -15,6 +15,10 @@ st.write("---")  # 横線を追加してセクションっぽくする
 # --- 2. Matplotlib 日本語対応 ---
 plt.rcParams['font.family'] = 'MS Gothic'  # Windows向け（macOS/Linuxなら適宜変更）
 
+file_path = "data.xlsx"  # `data.xlsx` に統一
+df = pd.read_excel(file_path, sheet_name="Table-1A")  # メインデータ
+notes_df = pd.read_excel(file_path, sheet_name="Notes-1A")  # "Notes" シートを読む
+
 # --- 3. サイドバーでデータをフィルタリング（選択肢を絞る） ---
 st.sidebar.title("データ選択")
 st.sidebar.write("ℹ️ 注意 \n Spec Noで複数のデータがある場合、許容引張応力は平均値が表示されます。全て選択して値を確認してください。")
