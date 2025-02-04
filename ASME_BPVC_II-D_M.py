@@ -7,8 +7,8 @@ st.markdown("## 📉 ASME BPVC Material Data Sheet")
 # --- 1. エディション情報の表示 ---
 edition_df = pd.read_excel("data.xlsx", sheet_name="Edition", header=None)
 st.write(f"#### {edition_df.iloc[0, 0]}")
-st.write(f"#### {edition_df.iloc[1, 0]}")
-st.write(f"#### {edition_df.iloc[2, 0]}")
+st.write(f"##### {edition_df.iloc[1, 0]}")
+st.write(f"##### {edition_df.iloc[2, 0]}")
 
 st.write("---")  # 横線を追加してセクションっぽくする
 
