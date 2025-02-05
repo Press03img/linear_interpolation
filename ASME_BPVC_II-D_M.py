@@ -142,3 +142,27 @@ ax.set_title("Estimation of allowable tensile stress by linear interpolation")
 ax.legend()
 ax.grid()
 st.pyplot(fig)
+
+# 印刷（日本語フォント修正） ---
+print_section = """
+    <script>
+    function printDiv() {
+        var divContents = document.getElementById("printableArea").innerHTML;
+        var printWindow = window.open('', '', 'height=600,width=800');
+        printWindow.document.write('<html><head><title>印刷</title></head><body>');
+        printWindow.document.write(divContents);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
+    }
+    </script>
+    <button onclick="printDiv()">🖨️ この部分だけ印刷</button>
+"""
+
+st.markdown(print_section, unsafe_allow_html=True)
+
+# 印刷したい部分
+st.markdown('<div id="printableArea">', unsafe_allow_html=True)
+st.write("📄 ここに印刷したいコンテンツを入れます。")
+st.dataframe({"A": [1, 2, 3], "B": [4, 5, 6]})  # データフレームを表示
+st.markdown('</div>', unsafe_allow_html=True)
