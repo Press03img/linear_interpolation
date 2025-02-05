@@ -26,7 +26,16 @@ filter_values = {}
 filtered_df = df.copy()
 
 for i, col in enumerate(columns_to_filter):
-    options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
+    if i == 0:
+        options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
+    else:
+        prev_col = columns_to_filter[i - 1]
+        prev_value = filter_values.get(prev_col, "(選択してください)")
+        if prev_value == "(選択してください)":
+            options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
+        else:
+            filtered_df = filtered_df[filtered_df[prev_col] == prev_value]
+            options = ["(選択してください)"] + sorted(filtered_df[col].dropna().unique().tolist())
     filter_values[col] = st.sidebar.selectbox(col, options)
 
 # 選択されたデータの詳細表示
