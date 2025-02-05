@@ -13,8 +13,8 @@ st.write("---")  # 横線を追加してセクションっぽくする
 
 # ラジオボタンで選択
 option = st.radio("Tableを選択してください:", [
-    "Table_1A : Maximum Allowable Stress Values, S, for Ferrous Materials", 
-    "Table_3  : Maximum Allowable Stress Values, S, for Bolting Materials"])
+    {"Table_1A"}, {":Maximum Allowable Stress Values, S, for Ferrous Materials",} 
+    {"Table_3"}, {":Maximum Allowable Stress Values, S, for Bolting Materials"}])
 
 # モジュール名を設定
 module_name = option
