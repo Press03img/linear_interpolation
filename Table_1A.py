@@ -145,21 +145,5 @@ def main():
     ax.grid()
     st.pyplot(fig)
 
-    # 📌 印刷ボタンの追加
-    print_button = """
-    <script>
-    function printPage() {
-        var bodyContent = document.body.innerHTML;
-        var printContent = document.getElementById("print-section").innerHTML;
-        document.body.innerHTML = printContent;
-        window.print();
-        document.body.innerHTML = bodyContent;
-    }
-    </script>
-    <button onclick="printPage()" style="padding:10px 20px;font-size:16px;">🖨️ 印刷する</button>
-    """
-
-    st.markdown(print_button, unsafe_allow_html=True)
-
 if __name__ == "__main__":
     main()
