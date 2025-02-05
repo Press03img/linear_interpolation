@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 
 def main():
     
-    st.write("#### Table-1A : Maximum Allowable Stress Values, S, for Ferrous Materials")
-    st.write("##### Section I; Section III, Division 1, Classes 2 and 3;* Section VIII, Division 1; and Section XII")
+    st.write("#### Table-3 : Maximum Allowable Stress Values, S, for Bolting Materials")
+    st.write("##### Section III, Division 1, Classes 2 and 3;* Section VIII, Divisions 1 and 2;† and Section XII")
 
     # Matplotlib 日本語対応 ---
     plt.rcParams['font.family'] = 'MS Gothic'  # Windows向け（macOS/Linuxなら適宜変更）

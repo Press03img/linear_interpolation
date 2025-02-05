@@ -1,8 +1,20 @@
 import streamlit as st
 import importlib
+import pandas as pd
+
+st.markdown("## 📉 ASME BPVC Material Data Sheet")
+
+# エディション情報の表示 ---
+edition_df = pd.read_excel("data.xlsx", sheet_name="Edition", header=None)
+st.write(f"#### {edition_df.iloc[0, 0]}")
+st.write(f"##### {edition_df.iloc[1, 0]}")
+st.write(f"##### {edition_df.iloc[2, 0]}")
+st.write("---")  # 横線を追加してセクションっぽくする
 
 # ラジオボタンで選択
-option = st.radio("データを選択してください:", ["Table_1A", "Table_4"])
+option = st.radio("Tableを選択してください:", [
+    "Table_1A : Maximum Allowable Stress Values, S, for Ferrous Materials", 
+    "Table_3  : Maximum Allowable Stress Values, S, for Bolting Materials"])
 
 # モジュール名を設定
 module_name = option
