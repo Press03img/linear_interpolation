@@ -144,25 +144,22 @@ ax.grid()
 st.pyplot(fig)
 
 # 印刷（日本語フォント修正） ---
-print_section = """
+import streamlit as st
+
+st.title("Streamlit Webアプリの印刷")
+
+# ダミーの長いテキストを追加（スクロール確認用）
+st.write("スクロールして、画面全体を確認してください。")
+for i in range(50):
+    st.write(f"これは行 {i+1} です。")
+
+# JavaScript を埋め込んで印刷機能を追加
+print_button = """
     <script>
-    function printDiv() {
-        var divContents = document.getElementById("printableArea").innerHTML;
-        var printWindow = window.open('', '', 'height=600,width=800');
-        printWindow.document.write('<html><head><title>印刷</title></head><body>');
-        printWindow.document.write(divContents);
-        printWindow.document.write('</body></html>');
-        printWindow.document.close();
-        printWindow.print();
+    function printPage() {
+        window.print();
     }
     </script>
-    <button onclick="printDiv()">🖨️ この部分だけ印刷</button>
+    <button onclick="printPage()">🖨️ 印刷する</button>
 """
-
-st.markdown(print_section, unsafe_allow_html=True)
-
-# 印刷したい部分
-st.markdown('<div id="printableArea">', unsafe_allow_html=True)
-st.write("📄 ここに印刷したいコンテンツを入れます。")
-st.dataframe({"A": [1, 2, 3], "B": [4, 5, 6]})  # データフレームを表示
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown(print_button, unsafe_allow_html=True)
