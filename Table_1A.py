@@ -71,14 +71,18 @@ def main():
         )
 
                     # Notes の詳細表示 ---
-                    notes_values = str(filtered_df.iloc[0, 12]).split(",")  # Notes を "," で分割
-                    st.subheader("Notes")
-                    
-                    for note in notes_values:
-                        note = note.strip()
-                        if note in notes_df.iloc[:, 2].values:  # 3列目に存在するか確認
-                            note_detail = notes_df[notes_df.iloc[:, 2] == note].iloc[0, 4]  # 5列目の詳細取得
-                            st.write(f"**{note}:** {note_detail}")  # ボタンではなく、直接表示
+                        st.subheader("Notes")
+                        
+                        for note in notes_values:
+                            note = note.strip()
+                            if note in notes_df.iloc[:, 2].values:
+                                note_detail = notes_df[notes_df.iloc[:, 2] == note].iloc[0, 4]
+                                st.markdown(f"""
+                                <div style="padding: 10px; border-radius: 5px; background-color: #f0f0f0; margin-bottom: 10px;">
+                                    <strong>{note}:</strong> {note_detail}
+                                </div>
+                                """, unsafe_allow_html=True)
+
 
 
     # 温度データと許容引張応力データの取得（フィルタ適用後） ---
