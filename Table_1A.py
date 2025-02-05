@@ -77,8 +77,7 @@ def main():
             note = note.strip()
             if note in notes_df.iloc[:, 2].values:  # 3列目に存在するか確認
                 note_detail = notes_df[notes_df.iloc[:, 2] == note].iloc[0, 4]  # 5列目の詳細取得
-                if st.write(note):  # クリック可能なボタンとして表示
-                    st.info(f"{note}: {note_detail}")
+                if st.write(f"**{note}:** {note_detail}"): 
 
     # 温度データと許容引張応力データの取得（フィルタ適用後） ---
     if not filtered_df.empty:
