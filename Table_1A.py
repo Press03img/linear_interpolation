@@ -145,23 +145,18 @@ def main():
     ax.grid()
     st.pyplot(fig)
 
-    # 📌 印刷ボタンの追加（JavaScriptを埋め込む）
+    # 📌 印刷ボタンの追加
     print_button = """
     <script>
-    function printSection() {
-        var content = document.getElementById("print-detail").innerHTML;
-        content += document.getElementById("print-notes").innerHTML;
-        content += document.getElementById("print-interpolation").innerHTML;
-
-        var newWin = window.open("", "", "width=800,height=600");
-        newWin.document.write("<html><head><title>印刷</title></head><body>");
-        newWin.document.write(content);
-        newWin.document.write("</body></html>");
-        newWin.document.close();
-        newWin.print();
+    function printPage() {
+        var bodyContent = document.body.innerHTML;
+        var printContent = document.getElementById("print-section").innerHTML;
+        document.body.innerHTML = printContent;
+        window.print();
+        document.body.innerHTML = bodyContent;
     }
     </script>
-    <button onclick="printSection()" style="padding:10px 20px;font-size:16px;">🖨️ 印刷する</button>
+    <button onclick="printPage()" style="padding:10px 20px;font-size:16px;">🖨️ 印刷する</button>
     """
 
     st.markdown(print_button, unsafe_allow_html=True)
