@@ -26,17 +26,10 @@ filter_values = {}
 filtered_df = df.copy()
 
 for i, col in enumerate(columns_to_filter):
-    if i == 0:
-        options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
-    else:
-        prev_col = columns_to_filter[i - 1]
-        prev_value = filter_values.get(prev_col, "(選択してください)")
-        if prev_value == "(選択してください)":
-            options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
-        else:
-            filtered_df = filtered_df[filtered_df[prev_col] == prev_value]
-            options = ["(選択してください)"] + sorted(filtered_df[col].dropna().unique().tolist())
+    options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
     filter_values[col] = st.sidebar.selectbox(col, options)
+    if filter_values[col] != "(選択してください)":
+        filtered_df = filtered_df[filtered_df[col] == filter_values[col]]
 
 # 選択されたデータの詳細表示
 if not filtered_df.empty:
@@ -63,29 +56,32 @@ if not filtered_df.empty:
 
 # 温度データと許容引張応力データの取得
 if not filtered_df.empty:
-    temp_values = filtered_df.columns[9:].astype(float)
-    stress_values = filtered_df.iloc[:, 9:].values.flatten()
+    try:
+        temp_values = filtered_df.columns[9:].astype(float)
+        stress_values = filtered_df.iloc[:, 9:].values.flatten()
+    except ValueError:
+        st.error("⚠️ データに数値でない列が含まれている可能性があります。Excelシートのフォーマットを確認してください。")
+        temp_values, stress_values = np.array([]), np.array([])
     
     # NaN除去
-    valid_idx = ~np.isnan(stress_values)
-    temp_values, stress_values = temp_values[valid_idx], stress_values[valid_idx]
+    if temp_values.size > 0 and stress_values.size > 0:
+        valid_idx = ~np.isnan(stress_values)
+        temp_values, stress_values = temp_values[valid_idx], stress_values[valid_idx]
 
-    st.subheader("設計温度と線形補間")
-    if temp_values.empty:
-        st.error("⚠️ 表示に必要なデータが選択されていません。")
-    else:
+        st.subheader("設計温度と線形補間")
         temp_input = st.number_input("設計温度 (℃)", min_value=float(min(temp_values)), max_value=float(max(temp_values)), value=float(min(temp_values)), step=1.0)
         interpolated_value = np.interp(temp_input, temp_values, stress_values)
         st.success(f"温度 {temp_input}℃ のときの許容引張応力: {interpolated_value:.2f} MPa")
 
 # グラフ描画
-fig, ax = plt.subplots(figsize=(8, 5))
-ax.scatter(temp_values, stress_values, label="Original Curve", color="blue", marker="o")
-ax.plot(temp_values, stress_values, linestyle="--", color="gray", alpha=0.7)
-ax.scatter(temp_input, interpolated_value, color="red", marker="x", s=100, label="Linear Interpolation Result")
-ax.set_xlabel("Temp. (℃)")
-ax.set_ylabel("Allowable Tensile Stress (MPa)")
-ax.set_title("Estimation of allowable tensile stress by linear interpolation")
-ax.legend()
-ax.grid()
-st.pyplot(fig)
+if temp_values.size > 0 and stress_values.size > 0:
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.scatter(temp_values, stress_values, label="Original Curve", color="blue", marker="o")
+    ax.plot(temp_values, stress_values, linestyle="--", color="gray", alpha=0.7)
+    ax.scatter(temp_input, interpolated_value, color="red", marker="x", s=100, label="Linear Interpolation Result")
+    ax.set_xlabel("Temp. (℃)")
+    ax.set_ylabel("Allowable Tensile Stress (MPa)")
+    ax.set_title("Estimation of allowable tensile stress by linear interpolation")
+    ax.legend()
+    ax.grid()
+    st.pyplot(fig)
