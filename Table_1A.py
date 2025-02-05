@@ -138,7 +138,7 @@ def main():
     fig, ax = plt.subplots(figsize=(8, 5))
     ax.scatter(temp_values, stress_values, label="Original Curve", color="blue", marker="o")
     ax.plot(temp_values, stress_values, linestyle="--", color="gray", alpha=0.7)
-    ax.scatter(temp_input, interpolated_value, color="red", marker="V", s=40, label="Linear Interpolation Result")
+    ax.scatter(temp_input, interpolated_value, color="red", marker="v", s=40, label="Linear Interpolation Result")
     ax.set_xlabel("Temp. (℃)")
     ax.set_ylabel("Allowable Tensile Stress (MPa)")
     ax.set_title("Estimation of allowable tensile stress by linear interpolation")
