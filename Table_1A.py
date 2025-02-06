@@ -51,7 +51,7 @@ def main():
                 filtered_df.iloc[0, 3], filtered_df.iloc[0, 4], filtered_df.iloc[0, 5], 
                 filtered_df.iloc[0, 6], filtered_df.iloc[0, 7], filtered_df.iloc[0, 8], 
                 filtered_df.iloc[0, 9], filtered_df.iloc[0, 10], filtered_df.iloc[0, 11], 
-                filtered_df.iloc[0, 12], filtered_df.iloc[0, 13]
+                filtered_df.iloc[0, 12]
             ]
         })
         
