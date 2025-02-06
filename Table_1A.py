@@ -45,7 +45,7 @@ def main():
         
         # 追加情報を表形式で表示（中央揃え & 幅調整）
         detail_data = pd.DataFrame({
-            "　　　　　　　　項目　　　　　　　　": excel_headers,
+            "　　　　　　　　　　　　項目　　　　　　　　　　　　": excel_headers,
             "値": [
                 filtered_df.iloc[0, 0], filtered_df.iloc[0, 1], filtered_df.iloc[0, 2],
                 filtered_df.iloc[0, 3], filtered_df.iloc[0, 4], filtered_df.iloc[0, 5], 
