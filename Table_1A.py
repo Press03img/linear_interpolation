@@ -42,16 +42,13 @@ def main():
         
         # 追加情報を表形式で表示（中央揃え & 幅調整）
         detail_data = pd.DataFrame({
-            "項目": [
-                "Composition", "Product", "P-No.", "Group No.", "Min. Tensile Strength, MPa", 
-                "Min. Yield Strength, MPa", "VIII-1—Applic. and Max. Temp. Limit (°C)　　　　　　　　　　　", 
-                "External Pressure Chart No.", "Notes"
-            ],
+            "項目": excel_headers,
             "値": [
-                filtered_df["Composition"].iloc[0], filtered_df["Product"].iloc[0], 
+                filtered_df.iloc[0, 0], filtered_df.iloc[0, 1], filtered_df.iloc[0, 2],
+                filtered_df.iloc[0, 3], filtered_df.iloc[0, 4], filtered_df.iloc[0, 5], 
                 filtered_df.iloc[0, 6], filtered_df.iloc[0, 7], filtered_df.iloc[0, 8], 
                 filtered_df.iloc[0, 9], filtered_df.iloc[0, 10], filtered_df.iloc[0, 11], 
-                filtered_df.iloc[0, 12]
+                filtered_df.iloc[0, 12], filtered_df.iloc[0, 13]
             ]
         })
         
