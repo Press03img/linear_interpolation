@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 def main():
     
     st.write("#### Table-1A : Maximum Allowable Stress Values, S, for Ferrous Materials")
-    st.write("##### Section I; Section III, Division 1, Classes 2 and 3;* Section VIII, Division 1; and Section XII")
+    st.write("###### Section I; Section III, Division 1, Classes 2 and 3;* Section VIII, Division 1; and Section XII")
 
     # Matplotlib 日本語対応 ---
     plt.rcParams['font.family'] = 'MS Gothic'  # Windows向け（macOS/Linuxなら適宜変更）
@@ -38,7 +38,7 @@ def main():
 
     # 選択されたデータの詳細を表形式で表示 ---
     if not filtered_df.empty:
-        st.subheader("選択されたデータの詳細")
+        st.subheader("#### 選択されたデータの詳細")
         
         # 追加情報を表形式で表示（中央揃え & 幅調整）
         detail_data = pd.DataFrame({
@@ -66,7 +66,7 @@ def main():
 
         # Notes の詳細表示 ---
         notes_values = str(filtered_df.iloc[0, 12]).split(",")  # Notes を "," で分割
-        st.subheader("Notes")
+        st.subheader("#### Notes")
         for note in notes_values:
             note = note.strip()
             if note in notes_df.iloc[:, 2].values:  # 3列目に存在するか確認
@@ -104,7 +104,7 @@ def main():
 
     # 🔹 ここにエラーチェックを追加！ ---
     temp_values = pd.Series(temp_values).dropna()  # NaN を除去
-    st.subheader("設計温度と線形補間")
+    st.subheader("#### 設計温度と線形補間")
     if temp_values.empty:
         st.error("⚠️ 表示に必要なデータが選択されていません。")
     else:
