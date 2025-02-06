@@ -41,7 +41,7 @@ def main():
         st.subheader("選択されたデータの詳細")
         
         # エクセルデータのシート名'Table-1A'のA1からN1までの値を読み込み
-        excel_headers = df.columns[:14].tolist()
+        excel_headers = df.columns[:13].tolist()
         
         # 追加情報を表形式で表示（中央揃え & 幅調整）
         detail_data = pd.DataFrame({
