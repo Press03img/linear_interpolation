@@ -20,21 +20,35 @@ def main():
     st.sidebar.write("ℹ️ 注意  \n Spec Noで複数のデータがある場合、許容引張応力は平均値が表示されます。全て選択して値を確認してください。")
 
     columns_to_filter = ["Composition", "Product", "Spec No", "Type/Grade", "Class", "Size/Tck"]
+
+    # リセットボタン
+    if st.sidebar.button("リセット"):
+        for col in columns_to_filter:
+            st.session_state[col] = "(選択してください)"
+
     filter_values = {}
     filtered_df = df.copy()
 
     for i, col in enumerate(columns_to_filter):
+        # セッションステートにキーが無ければ初期化
+        if col not in st.session_state:
+            st.session_state[col] = "(選択してください)"
+
         if i == 0:
             options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
         else:
             prev_col = columns_to_filter[i - 1]
-            prev_value = filter_values.get(prev_col, "(選択してください)")
+            prev_value = st.session_state[prev_col]
             if prev_value == "(選択してください)":
                 options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
             else:
                 filtered_df = filtered_df[filtered_df[prev_col] == prev_value]
                 options = ["(選択してください)"] + sorted(filtered_df[col].dropna().unique().tolist())
-        filter_values[col] = st.sidebar.selectbox(col, options)
+
+        # selectboxのkeyをcol名に設定し、状態をセッションステートで管理
+        filter_values[col] = st.sidebar.selectbox(col, options, index=options.index(st.session_state[col]), key=col)
+
+    # filter_valuesはselectboxの選択値が入っているので以降はこれを使用して続行
 
     # 選択されたデータの詳細を表形式で表示 ---
     if not filtered_df.empty:
@@ -142,3 +156,4 @@ def main():
 if __name__ == "__main__":
 
     main()
+
