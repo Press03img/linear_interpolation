@@ -3,137 +3,147 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-# ---------- データ読み込み ----------
-df, notes_df = load_data("data.xlsx"):
-    df = pd.read_excel(path, sheet_name="Table-1A")
-    notes_df = pd.read_excel(path, sheet_name="Notes-1A")
+def main():
+    
+    st.write("#### Table-1A : Maximum Allowable Stress Values, S, for Ferrous Materials")
+    st.write("###### Section I; Section III, Division 1, Classes 2 and 3;* Section VIII, Division 1; and Section XII")
 
-    # 数値カラムを float に変換（温度列以降）
-    df.iloc[:, 13:] = df.iloc[:, 13:].apply(pd.to_numeric, errors="coerce")
-    return df, notes_df
+    # Matplotlib 日本語対応
+    plt.rcParams['font.family'] = 'MS Gothic'  # Windows向け（macOS/Linuxなら適宜変更）
 
+    file_path = "data.xlsx"
+    df = pd.read_excel(file_path, sheet_name="Table-1A")
+    notes_df = pd.read_excel(file_path, sheet_name="Notes-1A")
 
-# ---------- サイドバー UI ----------
-def sidebar_filters(df):
-    st.sidebar.header("フィルター条件")
+    # サイドバーでデータフィルタリング
+    st.sidebar.title("データ選択")
+    st.sidebar.write("ℹ️ 注意  \n Spec Noで複数のデータがある場合、許容引張応力は平均値が表示されます。全て選択して値を確認してください。")
+
+    columns_to_filter = ["Composition", "Product", "Spec No", "Type/Grade", "Class", "Size/Tck"]
     filter_values = {}
     filtered_df = df.copy()
 
-    # フィルター対象列（例）
-    filter_columns = df.columns[:5]
+    for i, col in enumerate(columns_to_filter):
+        if i == 0:
+            options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
+        else:
+            prev_col = columns_to_filter[i - 1]
+            prev_value = filter_values.get(prev_col, "(選択してください)")
+            if prev_value == "(選択してください)":
+                options = ["(選択してください)"] + sorted(df[col].dropna().unique().tolist())
+            else:
+                filtered_df = filtered_df[filtered_df[prev_col] == prev_value]
+                options = ["(選択してください)"] + sorted(filtered_df[col].dropna().unique().tolist())
+        filter_values[col] = st.sidebar.selectbox(col, options)
 
-    for col in filter_columns:
-        options = ["(選択してください)"] + sorted(filtered_df[col].dropna().unique().tolist())
-        default_idx = 0
-        filter_values[col] = st.sidebar.selectbox(col, options, index=default_idx)
+    # 選択されたデータの詳細
+    if not filtered_df.empty:
+        st.subheader("選択されたデータの詳細")
+        
+        excel_headers = df.columns[:13].tolist()
+        detail_data = pd.DataFrame({
+            "　　　　　　　　　　　　項目　　　　　　　　　　　　": excel_headers,
+            "値": [
+                filtered_df.iloc[0, 0], filtered_df.iloc[0, 1], filtered_df.iloc[0, 2],
+                filtered_df.iloc[0, 3], filtered_df.iloc[0, 4], filtered_df.iloc[0, 5], 
+                filtered_df.iloc[0, 6], filtered_df.iloc[0, 7], filtered_df.iloc[0, 8], 
+                filtered_df.iloc[0, 9], filtered_df.iloc[0, 10], filtered_df.iloc[0, 11], 
+                filtered_df.iloc[0, 12]
+            ]
+        })
+        
+        st.markdown(
+            detail_data.style.set_table_styles([
+                {"selector": "table", "props": [("width", "100%"), ("table-layout", "fixed")]},
+                {"selector": "th", "props": [("text-align", "center")]},
+                {"selector": "td:nth-child(2)", "props": [("text-align", "center"), ("width", "40%")]},
+            ]).hide(axis="index").to_html(),
+            unsafe_allow_html=True
+        )
 
-        if filter_values[col] != "(選択してください)":
-            filtered_df = filtered_df[filtered_df[col] == filter_values[col]]
+        # Notes 表形式表示（常時表示・インデックス非表示）
+        notes_values = str(filtered_df.iloc[0, 12]).split(",")  # Notes を "," で分割
+        notes_table = []
+        for note in notes_values:
+            note = note.strip()
+            if note in notes_df.iloc[:, 2].values:
+                note_detail = notes_df[notes_df.iloc[:, 2] == note].iloc[0, 4]
+                notes_table.append([note, note_detail])
 
-    # リセットボタン
-    if st.sidebar.button("フィルターをリセット"):
-        st.experimental_rerun()
+        st.subheader("Notes")
+        if notes_table:
+            notes_df_display = pd.DataFrame(notes_table, columns=["Note", "Detail"])
+            st.markdown(
+                notes_df_display.style
+                .hide(axis="index")
+                .set_table_styles([
+                    {"selector": "th", "props": [("text-align", "center")]},
+                    {"selector": "td", "props": [("text-align", "left")]},
+                ])
+                .to_html(),
+                unsafe_allow_html=True
+            )
+        else:
+            st.info("該当する Notes はありません。")
 
-    return filter_values, filtered_df
+    # 温度データと許容引張応力データ取得
+    if not filtered_df.empty:
+        temp_values = filtered_df.columns[13:].astype(float)
+        stress_values = filtered_df.iloc[:, 13:].values
 
+        if all(filter_values[col] != "(選択してください)" for col in ["Type/Grade", "Class", "Size/Tck"]):
+            selected_df = filtered_df[
+                (filtered_df["Type/Grade"] == filter_values["Type/Grade"]) &
+                (filtered_df["Class"] == filter_values["Class"]) &
+                (filtered_df["Size/Tck"] == filter_values["Size/Tck"])
+            ]
+        else:
+            selected_df = filtered_df
 
-# ---------- 詳細情報表示 ----------
-def display_details(filtered_df):
-    st.subheader("詳細情報")
-    details = filtered_df.iloc[:, :13]  # 最初の13列までを詳細情報として表示
-    st.markdown(
-        details.style
-        .hide(axis="index")
-        .set_table_styles([
-            {"selector": "th", "props": [("text-align", "center")]},
-            {"selector": "td", "props": [("text-align", "left")]},
-        ])
-        .to_html(),
-        unsafe_allow_html=True
-    )
+        if not selected_df.empty:
+            stress_values = selected_df.iloc[:, 13:].values
+            if stress_values.shape[0] == 1:
+                stress_values = stress_values.flatten()
+            elif stress_values.shape[0] > 1:
+                stress_values = np.mean(stress_values, axis=0)
 
+    valid_idx = ~np.isnan(stress_values)
+    temp_values = temp_values[valid_idx]
+    stress_values = stress_values[valid_idx]
 
-# ---------- Notes 表示 ----------
-def display_notes(filtered_df, notes_df):
-    st.subheader("Notes")
-    if filtered_df.empty:
-        st.info("該当する Notes はありません。")
-        return
+    temp_values = pd.Series(temp_values).dropna()
+    st.subheader("設計温度と線形補間")
+    if temp_values.empty:
+        st.error("⚠️ 表示に必要なデータが選択されていません。")
+    else:
+        temp_input = st.number_input(
+            "設計温度 (℃)", 
+            min_value=float(min(temp_values)), 
+            max_value=float(max(temp_values)), 
+            value=float(min(temp_values)), 
+            step=1.0,
+            key="temp_input"
+        )
 
-    note_list = [n.strip() for n in str(filtered_df.iloc[0, 12]).split(",") if n.strip()]
-    if not note_list:
-        st.info("該当する Notes はありません。")
-        return
-
-    notes_display = pd.DataFrame(note_list, columns=["Note"])
-    notes_display = notes_display.merge(
-        notes_df.iloc[:, [2, 4]],
-        left_on="Note",
-        right_on=notes_df.columns[2],
-        how="left"
-    ).drop(columns=[notes_df.columns[2]])
-
-    notes_display = notes_display.rename(columns={notes_df.columns[4]: "Detail"})
-
-    st.markdown(
-        notes_display.style
-        .hide(axis="index")
-        .set_table_styles([
-            {"selector": "th", "props": [("text-align", "center")]},
-            {"selector": "td", "props": [("text-align", "left")]},
-        ])
-        .to_html(),
-        unsafe_allow_html=True
-    )
-
-
-# ---------- 補間とグラフ ----------
-def interpolation_and_plot(filtered_df, filter_values):
-    st.subheader("温度データ補間＆グラフ")
-    if filtered_df.empty:
-        st.warning("条件に合致するデータがありません。")
-        return
-
-    # 温度カラム
-    temp_cols = filtered_df.columns[13:]
-    temps = temp_cols.astype(float)
-    values = filtered_df.iloc[0, 13:].values
-
-    # 補間処理
-    target_temp = st.number_input("補間したい温度 (°C)", value=float(temps.min()), step=5.0)
-    interp_val = np.interp(target_temp, temps, values)
-    st.write(f"{target_temp}°C の補間値: **{interp_val:.2f}**")
+    if temp_values.empty or stress_values.size == 0:
+        st.error("⚠️ 補間に必要なデータが選択されていません。")
+    elif len(temp_values) == len(stress_values):
+        interpolated_value = np.interp(temp_input, temp_values, stress_values)
+        st.success(f"温度 {temp_input}℃ のときの許容引張応力: {interpolated_value:.2f} MPa")
+    else:
+        st.error("データの不整合があり、補間できません。エクセルのデータを確認してください。")
 
     # グラフ描画
-    fig, ax = plt.subplots()
-    ax.plot(temps, values, marker="o", label="実測値")
-    ax.plot(target_temp, interp_val, "rx", label="補間値")
-    ax.set_xlabel("温度 (°C)")
-    ax.set_ylabel("値")
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.scatter(temp_values, stress_values, label="Original Curve", color="blue", marker="o")
+    ax.plot(temp_values, stress_values, linestyle="--", color="gray", alpha=0.7)
+    ax.scatter(temp_input, interpolated_value, color="red", marker="v", s=40, label="Linear Interpolation Result")
+    ax.set_xlabel("Temp. (℃)")
+    ax.set_ylabel("Allowable Tensile Stress (MPa)")
+    ax.set_title("Estimation of allowable tensile stress by linear interpolation")
     ax.legend()
-    ax.grid(True)
+    ax.grid()
     st.pyplot(fig)
-
-
-# ---------- メイン処理 ----------
-def main():
-    st.title("圧力容器データビューア")
-
-    # データ読み込み
-    df, notes_df = load_data("sample.xlsx")
-
-    # フィルター
-    filter_values, filtered_df = sidebar_filters(df)
-
-    if not filtered_df.empty:
-        display_details(filtered_df)
-        display_notes(filtered_df, notes_df)
-        interpolation_and_plot(filtered_df, filter_values)
-    else:
-        st.warning("条件に合致するデータがありません。")
-
 
 if __name__ == "__main__":
     main()
-
-
