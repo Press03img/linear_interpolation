@@ -64,21 +64,21 @@ def main():
             unsafe_allow_html=True
         )
 
-        # Notes の詳細表示（expander で整理）
+        # Notes の詳細表示（expanderで整理、初期状態で展開）
         notes_values = str(filtered_df.iloc[0, 12]).split(",")  # Notes を "," で分割
         with st.expander("Notes", expanded=True):
-        for note in notes_values:
-            note = note.strip()
-            if note in notes_df.iloc[:, 2].values:  # 3列目に存在するか確認
-                note_detail = notes_df[notes_df.iloc[:, 2] == note].iloc[0, 4]  # 5列目の詳細取得
-                st.markdown(f"**{note}**: {note_detail}")
-    
+            for note in notes_values:
+                note = note.strip()
+                if note in notes_df.iloc[:, 2].values:  # 3列目に存在するか確認
+                    note_detail = notes_df[notes_df.iloc[:, 2] == note].iloc[0, 4]  # 5列目の詳細取得
+                    st.markdown(f"**{note}**: {note_detail}")
+
     # 温度データと許容引張応力データの取得（フィルタ適用後） ---
     if not filtered_df.empty:
         temp_values = filtered_df.columns[13:].astype(float)
         stress_values = filtered_df.iloc[:, 13:].values  # 2D 配列のまま取得
 
-        # 🔹 選択データのうち、Type/Grade、Class、Size/Tck すべてが選択されている場合のみ適用
+        # Type/Grade, Class, Size/Tck がすべて選択されている場合のみ適用
         if all(filter_values[col] != "(選択してください)" for col in ["Type/Grade", "Class", "Size/Tck"]):
             selected_df = filtered_df[
                 (filtered_df["Type/Grade"] == filter_values["Type/Grade"]) &
@@ -88,21 +88,20 @@ def main():
         else:
             selected_df = filtered_df
 
-        # 🔹 stress_values を 1D 配列に変換する
+        # stress_values を 1D 配列に変換する
         if not selected_df.empty:
-            stress_values = selected_df.iloc[:, 13:].values  # 2D 配列のまま取得
+            stress_values = selected_df.iloc[:, 13:].values
             if stress_values.shape[0] == 1:
                 stress_values = stress_values.flatten()
             elif stress_values.shape[0] > 1:
                 stress_values = np.mean(stress_values, axis=0)  # 平均を取る
 
-    # 🔹 NaN を除去して、データ長を一致させる
-    valid_idx = ~np.isnan(stress_values)  # NaN でないインデックスを取得
-    temp_values = temp_values[valid_idx]  # NaN を除外
-    stress_values = stress_values[valid_idx]  # NaN を除外
+    # NaN を除去
+    valid_idx = ~np.isnan(stress_values)
+    temp_values = temp_values[valid_idx]
+    stress_values = stress_values[valid_idx]
 
-    # 🔹 ここにエラーチェックを追加！ ---
-    temp_values = pd.Series(temp_values).dropna()  # NaN を除去
+    temp_values = pd.Series(temp_values).dropna()
     st.subheader("設計温度と線形補間")
     if temp_values.empty:
         st.error("⚠️ 表示に必要なデータが選択されていません。")
@@ -113,20 +112,19 @@ def main():
             max_value=float(max(temp_values)), 
             value=float(min(temp_values)), 
             step=1.0,
-            key="temp_input"  # 🔹 keyを指定して重複を防ぐ
+            key="temp_input"
         )
 
-    # 線形補間を実行して即時表示 ---
+    # 線形補間の計算
     if temp_values.empty or stress_values.size == 0:
         st.error("⚠️ 補間に必要なデータが選択されていません。")
-    elif len(temp_values) == len(stress_values):  # データ長が一致する場合のみ実行
+    elif len(temp_values) == len(stress_values):
         interpolated_value = np.interp(temp_input, temp_values, stress_values)
         st.success(f"温度 {temp_input}℃ のときの許容引張応力: {interpolated_value:.2f} MPa")
     else:
         st.error("データの不整合があり、補間できません。エクセルのデータを確認してください。")
 
-
-    # グラフ描画（日本語フォント修正） ---
+    # グラフ描画
     fig, ax = plt.subplots(figsize=(8, 5))
     ax.scatter(temp_values, stress_values, label="Original Curve", color="blue", marker="o")
     ax.plot(temp_values, stress_values, linestyle="--", color="gray", alpha=0.7)
@@ -140,5 +138,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
