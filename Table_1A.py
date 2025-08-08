@@ -8,14 +8,14 @@ def main():
     st.write("#### Table-1A : Maximum Allowable Stress Values, S, for Ferrous Materials")
     st.write("###### Section I; Section III, Division 1, Classes 2 and 3;* Section VIII, Division 1; and Section XII")
 
-    # Matplotlib 日本語対応 ---
+    # Matplotlib 日本語対応
     plt.rcParams['font.family'] = 'MS Gothic'  # Windows向け（macOS/Linuxなら適宜変更）
 
-    file_path = "data.xlsx"  # `data.xlsx` に統一
+    file_path = "data.xlsx"
     df = pd.read_excel(file_path, sheet_name="Table-1A")  # メインデータ
-    notes_df = pd.read_excel(file_path, sheet_name="Notes-1A")  # "Notes" シートを読む
+    notes_df = pd.read_excel(file_path, sheet_name="Notes-1A")  # Notes シート
 
-    # サイドバーでデータをフィルタリング（選択肢を絞る） ---
+    # サイドバーでデータをフィルタリング
     st.sidebar.title("データ選択")
     st.sidebar.write("ℹ️ 注意  \n Spec Noで複数のデータがある場合、許容引張応力は平均値が表示されます。全て選択して値を確認してください。")
 
@@ -36,14 +36,12 @@ def main():
                 options = ["(選択してください)"] + sorted(filtered_df[col].dropna().unique().tolist())
         filter_values[col] = st.sidebar.selectbox(col, options)
 
-    # 選択されたデータの詳細を表形式で表示 ---
+    # 選択されたデータの詳細表示
     if not filtered_df.empty:
         st.subheader("選択されたデータの詳細")
         
-        # エクセルデータのシート名'Table-1A'のA1からN1までの値を読み込み
         excel_headers = df.columns[:13].tolist()
         
-        # 追加情報を表形式で表示（中央揃え & 幅調整）
         detail_data = pd.DataFrame({
             "　　　　　　　　　　　　項目　　　　　　　　　　　　": excel_headers,
             "値": [
@@ -64,21 +62,27 @@ def main():
             unsafe_allow_html=True
         )
 
-        # Notes の詳細表示（expanderで整理、初期状態で展開）
+        # Notes 表形式表示（expander）
         notes_values = str(filtered_df.iloc[0, 12]).split(",")  # Notes を "," で分割
         with st.expander("Notes", expanded=True):
+            notes_table = []
             for note in notes_values:
                 note = note.strip()
-                if note in notes_df.iloc[:, 2].values:  # 3列目に存在するか確認
-                    note_detail = notes_df[notes_df.iloc[:, 2] == note].iloc[0, 4]  # 5列目の詳細取得
-                    st.markdown(f"**{note}**: {note_detail}")
+                if note in notes_df.iloc[:, 2].values:
+                    note_detail = notes_df[notes_df.iloc[:, 2] == note].iloc[0, 4]
+                    notes_table.append([note, note_detail])
 
-    # 温度データと許容引張応力データの取得（フィルタ適用後） ---
+            if notes_table:
+                notes_df_display = pd.DataFrame(notes_table, columns=["Note", "Detail"])
+                st.table(notes_df_display)
+            else:
+                st.info("該当する Notes はありません。")
+
+    # 温度データと許容引張応力データの取得
     if not filtered_df.empty:
         temp_values = filtered_df.columns[13:].astype(float)
-        stress_values = filtered_df.iloc[:, 13:].values  # 2D 配列のまま取得
+        stress_values = filtered_df.iloc[:, 13:].values
 
-        # Type/Grade, Class, Size/Tck がすべて選択されている場合のみ適用
         if all(filter_values[col] != "(選択してください)" for col in ["Type/Grade", "Class", "Size/Tck"]):
             selected_df = filtered_df[
                 (filtered_df["Type/Grade"] == filter_values["Type/Grade"]) &
@@ -88,15 +92,13 @@ def main():
         else:
             selected_df = filtered_df
 
-        # stress_values を 1D 配列に変換する
         if not selected_df.empty:
             stress_values = selected_df.iloc[:, 13:].values
             if stress_values.shape[0] == 1:
                 stress_values = stress_values.flatten()
             elif stress_values.shape[0] > 1:
-                stress_values = np.mean(stress_values, axis=0)  # 平均を取る
+                stress_values = np.mean(stress_values, axis=0)
 
-    # NaN を除去
     valid_idx = ~np.isnan(stress_values)
     temp_values = temp_values[valid_idx]
     stress_values = stress_values[valid_idx]
@@ -115,7 +117,6 @@ def main():
             key="temp_input"
         )
 
-    # 線形補間の計算
     if temp_values.empty or stress_values.size == 0:
         st.error("⚠️ 補間に必要なデータが選択されていません。")
     elif len(temp_values) == len(stress_values):
