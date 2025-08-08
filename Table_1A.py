@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # ---------- データ読み込み ----------
-def load_data("data.xlsx"):
+df, notes_df = load_data("data.xlsx"):
     df = pd.read_excel(path, sheet_name="Table-1A")
     notes_df = pd.read_excel(path, sheet_name="Notes-1A")
 
@@ -135,4 +135,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
