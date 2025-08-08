@@ -102,9 +102,19 @@ def main():
     temp_values = temp_values[valid_idx]  # NaN を除外
     stress_values = stress_values[valid_idx]  # NaN を除外
 
+    # 選択されたフィルター値を取得し、空白は半角スペースに置換
+    def sanitize(value):
+        if not value or str(value).strip() == "":
+            return " "
+        return str(value)
+
+    spec_no = sanitize(filter_values.get("Spec No", ""))
+    type_grade = sanitize(filter_values.get("Type/Grade", ""))
+    class_ = sanitize(filter_values.get("Class", ""))
+
     # 🔹 ここにエラーチェックを追加！ ---
     temp_values = pd.Series(temp_values).dropna()  # NaN を除去
-    st.subheader("設計温度と線形補間")
+    st.subheader(f"設計温度と線形補間  (Spec No: {spec_no}  Type/Grade: {type_grade}  Class: {class_})")
     if temp_values.empty:
         st.error("⚠️ 表示に必要なデータが選択されていません。")
     else:
@@ -120,24 +130,26 @@ def main():
     # 線形補間を実行して即時表示 ---
     if temp_values.empty or stress_values.size == 0:
         st.error("⚠️ 補間に必要なデータが選択されていません。")
+        interpolated_value = None
     elif len(temp_values) == len(stress_values):  # データ長が一致する場合のみ実行
         interpolated_value = np.interp(temp_input, temp_values, stress_values)
         st.success(f"温度 {temp_input}℃ のときの許容引張応力: {interpolated_value:.2f} MPa")
     else:
         st.error("データの不整合があり、補間できません。エクセルのデータを確認してください。")
-
+        interpolated_value = None
 
     # グラフ描画（日本語フォント修正） ---
-    fig, ax = plt.subplots(figsize=(8, 5))
-    ax.scatter(temp_values, stress_values, label="Original Curve", color="blue", marker="o")
-    ax.plot(temp_values, stress_values, linestyle="--", color="gray", alpha=0.7)
-    ax.scatter(temp_input, interpolated_value, color="red", marker="v", s=40, label="Linear Interpolation Result")
-    ax.set_xlabel("Temp. (℃)")
-    ax.set_ylabel("Allowable Tensile Stress (MPa)")
-    ax.set_title("Estimation of allowable tensile stress by linear interpolation")
-    ax.legend()
-    ax.grid()
-    st.pyplot(fig)
+    if interpolated_value is not None:
+        fig, ax = plt.subplots(figsize=(8, 5))
+        ax.scatter(temp_values, stress_values, label="Original Curve", color="blue", marker="o")
+        ax.plot(temp_values, stress_values, linestyle="--", color="gray", alpha=0.7)
+        ax.scatter(temp_input, interpolated_value, color="red", marker="v", s=40, label="Linear Interpolation Result")
+        ax.set_xlabel("Temp. (℃)")
+        ax.set_ylabel("Allowable Tensile Stress (MPa)")
+        ax.set_title(f"Estimation of allowable tensile stress by linear interpolation  (Spec No: {spec_no}  Type/Grade: {type_grade}  Class: {class_})")
+        ax.legend()
+        ax.grid()
+        st.pyplot(fig)
 
 if __name__ == "__main__":
     main()
