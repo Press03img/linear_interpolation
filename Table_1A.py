@@ -12,10 +12,10 @@ def main():
     plt.rcParams['font.family'] = 'MS Gothic'  # Windows向け（macOS/Linuxなら適宜変更）
 
     file_path = "data.xlsx"
-    df = pd.read_excel(file_path, sheet_name="Table-1A")  # メインデータ
-    notes_df = pd.read_excel(file_path, sheet_name="Notes-1A")  # Notes シート
+    df = pd.read_excel(file_path, sheet_name="Table-1A")
+    notes_df = pd.read_excel(file_path, sheet_name="Notes-1A")
 
-    # サイドバーでデータをフィルタリング
+    # サイドバーでデータフィルタリング
     st.sidebar.title("データ選択")
     st.sidebar.write("ℹ️ 注意  \n Spec Noで複数のデータがある場合、許容引張応力は平均値が表示されます。全て選択して値を確認してください。")
 
@@ -36,12 +36,11 @@ def main():
                 options = ["(選択してください)"] + sorted(filtered_df[col].dropna().unique().tolist())
         filter_values[col] = st.sidebar.selectbox(col, options)
 
-    # 選択されたデータの詳細表示
+    # 選択されたデータの詳細
     if not filtered_df.empty:
         st.subheader("選択されたデータの詳細")
         
         excel_headers = df.columns[:13].tolist()
-        
         detail_data = pd.DataFrame({
             "　　　　　　　　　　　　項目　　　　　　　　　　　　": excel_headers,
             "値": [
@@ -62,23 +61,32 @@ def main():
             unsafe_allow_html=True
         )
 
-        # Notes 表形式表示（expander）
+        # Notes 表形式表示（常時表示・インデックス非表示）
         notes_values = str(filtered_df.iloc[0, 12]).split(",")  # Notes を "," で分割
-        with st.expander("Notes", expanded=True):
-            notes_table = []
-            for note in notes_values:
-                note = note.strip()
-                if note in notes_df.iloc[:, 2].values:
-                    note_detail = notes_df[notes_df.iloc[:, 2] == note].iloc[0, 4]
-                    notes_table.append([note, note_detail])
+        notes_table = []
+        for note in notes_values:
+            note = note.strip()
+            if note in notes_df.iloc[:, 2].values:
+                note_detail = notes_df[notes_df.iloc[:, 2] == note].iloc[0, 4]
+                notes_table.append([note, note_detail])
 
-            if notes_table:
-                notes_df_display = pd.DataFrame(notes_table, columns=["Note", "Detail"])
-                st.table(notes_df_display)
-            else:
-                st.info("該当する Notes はありません。")
+        st.subheader("Notes")
+        if notes_table:
+            notes_df_display = pd.DataFrame(notes_table, columns=["Note", "Detail"])
+            st.markdown(
+                notes_df_display.style
+                .hide(axis="index")
+                .set_table_styles([
+                    {"selector": "th", "props": [("text-align", "center")]},
+                    {"selector": "td", "props": [("text-align", "left")]},
+                ])
+                .to_html(),
+                unsafe_allow_html=True
+            )
+        else:
+            st.info("該当する Notes はありません。")
 
-    # 温度データと許容引張応力データの取得
+    # 温度データと許容引張応力データ取得
     if not filtered_df.empty:
         temp_values = filtered_df.columns[13:].astype(float)
         stress_values = filtered_df.iloc[:, 13:].values
