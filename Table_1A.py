@@ -64,15 +64,15 @@ def main():
             unsafe_allow_html=True
         )
 
-        # Notes の詳細表示（常に表示）
+        # Notes の詳細表示（expander で整理）
         notes_values = str(filtered_df.iloc[0, 12]).split(",")  # Notes を "," で分割
-        st.subheader("Notes")
+        with st.expander("Notes", expanded=True):
         for note in notes_values:
             note = note.strip()
             if note in notes_df.iloc[:, 2].values:  # 3列目に存在するか確認
                 note_detail = notes_df[notes_df.iloc[:, 2] == note].iloc[0, 4]  # 5列目の詳細取得
                 st.markdown(f"**{note}**: {note_detail}")
-
+    
     # 温度データと許容引張応力データの取得（フィルタ適用後） ---
     if not filtered_df.empty:
         temp_values = filtered_df.columns[13:].astype(float)
@@ -140,4 +140,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
