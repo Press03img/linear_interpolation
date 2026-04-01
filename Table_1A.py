@@ -149,7 +149,7 @@ def main():
     ax.set_title("Estimation of allowable tensile stress by linear interpolation")
     ax.legend()
     ax.grid()
-    st.pyplot(fig)
+    st.pyplot(fig, clear_figure=True)
 
 if __name__ == "__main__":
     main()
