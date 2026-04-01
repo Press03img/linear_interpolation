@@ -4,7 +4,10 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import japanize_matplotlib  # japanize-matplotlibでフォント自動設定
+import japanize_matplotlib
+from matplotlib.backends.backend_agg import RendererAgg  # ← 追加
+
+_lock = RendererAgg.lock  # ← 追加
 
 def main():
     st.write("#### Table-1A : Maximum Allowable Stress Values, S, for Ferrous Materials")
@@ -14,7 +17,6 @@ def main():
     df = pd.read_excel(file_path, sheet_name="Table-1A")
     notes_df = pd.read_excel(file_path, sheet_name="Notes-1A")
 
-    # サイドバーでデータフィルタリング
     st.sidebar.title("データ選択")
     st.sidebar.write("ℹ️ 注意  \n Spec Noで複数のデータがある場合、許容引張応力は平均値が表示されます。全て選択して値を確認してください。")
 
@@ -35,16 +37,13 @@ def main():
                 options = ["(選択してください)"] + sorted(filtered_df[col].dropna().unique().tolist())
         filter_values[col] = st.sidebar.selectbox(col, options)
 
-    # 選択されたデータの詳細
     if not filtered_df.empty:
         st.subheader("選択されたデータの詳細")
-
         excel_headers = df.columns[:13].tolist()
         detail_data = pd.DataFrame({
             "　　　　　　　　　　　　項目　　　　　　　　　　　　": excel_headers,
             "値": [filtered_df.iloc[0, i] for i in range(13)]
         })
-
         st.markdown(
             detail_data.style.set_table_styles([
                 {"selector": "table", "props": [("width", "100%"), ("table-layout", "fixed")]},
@@ -54,7 +53,6 @@ def main():
             unsafe_allow_html=True
         )
 
-        # Notes 表示
         notes_values = str(filtered_df.iloc[0, 12]).split(",")
         notes_table = []
         for note in notes_values:
@@ -67,25 +65,19 @@ def main():
         if notes_table:
             notes_df_display = pd.DataFrame(notes_table, columns=["Note", "Detail"])
             st.markdown(
-                notes_df_display.style
-                .hide(axis="index")
-                .set_table_styles([
+                notes_df_display.style.hide(axis="index").set_table_styles([
                     {"selector": "th", "props": [("text-align", "center")]},
                     {"selector": "td", "props": [("text-align", "left")]},
-                ])
-                .to_html(),
+                ]).to_html(),
                 unsafe_allow_html=True
             )
         else:
             st.info("該当する Notes はありません。")
 
-    # ここから温度・応力データの処理 -------------------------------------------
-    # filtered_df が空の場合はグラフ・補間セクションをスキップ
     if filtered_df.empty:
         st.warning("⚠️ データが選択されていません。サイドバーから条件を選択してください。")
         return
 
-    # 絞り込み
     if all(filter_values[col] != "(選択してください)" for col in ["Type/Grade", "Class", "Size/Tck"]):
         selected_df = filtered_df[
             (filtered_df["Type/Grade"] == filter_values["Type/Grade"]) &
@@ -99,7 +91,6 @@ def main():
         st.warning("⚠️ 条件に一致するデータがありません。")
         return
 
-    # 温度列・応力値の取得
     temp_columns = df.columns[13:].astype(float)
     stress_raw = selected_df.iloc[:, 13:].values
 
@@ -108,7 +99,6 @@ def main():
     else:
         stress_values = np.nanmean(stress_raw.astype(float), axis=0)
 
-    # NaN除去
     valid_idx = ~np.isnan(stress_values)
     temp_values = temp_columns[valid_idx]
     stress_values = stress_values[valid_idx]
@@ -117,7 +107,6 @@ def main():
         st.error("⚠️ 有効な温度・応力データがありません。")
         return
 
-    # 補間入力
     st.subheader("設計温度と線形補間")
     temp_input = st.number_input(
         "設計温度 (℃)",
@@ -128,22 +117,22 @@ def main():
         key="temp_input"
     )
 
-    # 補間計算
     interpolated_value = np.interp(temp_input, temp_values, stress_values)
     st.success(f"温度 {temp_input}℃ のときの許容引張応力: {interpolated_value:.2f} MPa")
 
-    # グラフ描画
-    fig, ax = plt.subplots(figsize=(8, 5))
-    ax.scatter(temp_values, stress_values, label="Original Curve", color="blue", marker="o")
-    ax.plot(temp_values, stress_values, linestyle="--", color="gray", alpha=0.7)
-    ax.scatter(temp_input, interpolated_value, color="red", marker="v", s=100, label="Linear Interpolation Result")
-    ax.set_xlabel("Temp. (℃)")
-    ax.set_ylabel("Allowable Tensile Stress (MPa)")
-    ax.set_title("Estimation of allowable tensile stress by linear interpolation")
-    ax.legend()
-    ax.grid()
-    st.pyplot(fig)
-    plt.close(fig)  # メモリリーク防止
+    # グラフ描画（lockでスレッド安全に）← ここが修正のポイント
+    with _lock:
+        fig, ax = plt.subplots(figsize=(8, 5))
+        ax.scatter(temp_values, stress_values, label="Original Curve", color="blue", marker="o")
+        ax.plot(temp_values, stress_values, linestyle="--", color="gray", alpha=0.7)
+        ax.scatter(temp_input, interpolated_value, color="red", marker="v", s=100, label="Linear Interpolation Result")
+        ax.set_xlabel("Temp. (℃)")
+        ax.set_ylabel("Allowable Tensile Stress (MPa)")
+        ax.set_title("Estimation of allowable tensile stress by linear interpolation")
+        ax.legend()
+        ax.grid()
+        st.pyplot(fig)
+        plt.close(fig)
 
 if __name__ == "__main__":
     main()
