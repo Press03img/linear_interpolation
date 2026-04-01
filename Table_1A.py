@@ -127,11 +127,17 @@ def main():
     ))
 
     fig.add_trace(go.Scatter(
-        x=[temp_input],
-        y=[interpolated_value],
-        mode="markers",
-        name="Linear Interpolation Result",
-        marker=dict(color="red", symbol="triangle-down", size=12)
+        x=list(temp_values),
+        y=list(stress_values),
+        mode="markers+lines",
+        name="Original Curve",
+        marker=dict(color="blue", symbol="circle", size=8),
+        line=dict(color="gray", dash="dash"),
+        hovertemplate=(
+            "温度: %{x:.1f} ℃<br>"
+            "許容引張応力: %{y:.2f} MPa<br>"
+            "<extra></extra>"
+        )
     ))
 
     fig.update_layout(
