@@ -136,7 +136,13 @@ def main():
         y=[interpolated_value],
         mode="markers",
         name="Linear Interpolation Result",
-        marker=dict(color="red", symbol="triangle-down", size=12)
+        marker=dict(color="red", symbol="triangle-down", size=12),
+        hovertemplate=(
+            "<b>補間結果</b><br>"
+            "温度: %{x:.1f} ℃<br>"
+            "許容引張応力: %{y:.2f} MPa<br>"
+            "<extra></extra>"
+        )
     ))
 
     fig.update_layout(
