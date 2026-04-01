@@ -1,13 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import japanize_matplotlib
-from matplotlib.backends.backend_agg import RendererAgg  # ← 追加
-
-_lock = RendererAgg.lock  # ← 追加
+import plotly.graph_objects as go
 
 def main():
     st.write("#### Table-1A : Maximum Allowable Stress Values, S, for Ferrous Materials")
@@ -120,19 +114,34 @@ def main():
     interpolated_value = np.interp(temp_input, temp_values, stress_values)
     st.success(f"温度 {temp_input}℃ のときの許容引張応力: {interpolated_value:.2f} MPa")
 
-    # グラフ描画（lockでスレッド安全に）← ここが修正のポイント
-    with _lock:
-        fig, ax = plt.subplots(figsize=(8, 5))
-        ax.scatter(temp_values, stress_values, label="Original Curve", color="blue", marker="o")
-        ax.plot(temp_values, stress_values, linestyle="--", color="gray", alpha=0.7)
-        ax.scatter(temp_input, interpolated_value, color="red", marker="v", s=100, label="Linear Interpolation Result")
-        ax.set_xlabel("Temp. (℃)")
-        ax.set_ylabel("Allowable Tensile Stress (MPa)")
-        ax.set_title("Estimation of allowable tensile stress by linear interpolation")
-        ax.legend()
-        ax.grid()
-        st.pyplot(fig)
-        plt.close(fig)
+    # グラフ描画（Plotly）
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=list(temp_values),
+        y=list(stress_values),
+        mode="markers+lines",
+        name="Original Curve",
+        marker=dict(color="blue", symbol="circle", size=8),
+        line=dict(color="gray", dash="dash")
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=[temp_input],
+        y=[interpolated_value],
+        mode="markers",
+        name="Linear Interpolation Result",
+        marker=dict(color="red", symbol="triangle-down", size=12)
+    ))
+
+    fig.update_layout(
+        title="Estimation of allowable tensile stress by linear interpolation",
+        xaxis_title="Temp. (℃)",
+        yaxis_title="Allowable Tensile Stress (MPa)",
+        legend=dict(x=0, y=1),
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
 
 if __name__ == "__main__":
     main()
