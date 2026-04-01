@@ -136,6 +136,7 @@ def main():
         st.error("データの不整合があり、補間できません。エクセルのデータを確認してください。")
 
     # グラフ描画
+    fig, ax = plt.subplots(figsize=(8, 5))
     ax.scatter(temp_values, stress_values, label="Original Curve", color="blue", marker="o")
     ax.plot(temp_values, stress_values, linestyle="--", color="gray", alpha=0.7)
     ax.scatter(temp_input, interpolated_value, color="red", marker="v", s=40, label="Linear Interpolation Result")
