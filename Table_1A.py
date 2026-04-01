@@ -152,7 +152,7 @@ def main():
         legend=dict(
             orientation="h",      # 水平並びに変更
             yanchor="bottom",
-            y=-0.2,               # グラフ下に配置（マイナス値で下へ）
+            y=-0.5,               # グラフ下に配置（マイナス値で下へ）
             xanchor="center",
             x=0.5                 # 中央揃え
         ),
