@@ -149,7 +149,13 @@ def main():
         title="Estimation of allowable tensile stress by linear interpolation",
         xaxis_title="Temp. (℃)",
         yaxis_title="Allowable Tensile Stress (MPa)",
-        legend=dict(x=0, y=1),
+        legend=dict(
+            orientation="h",      # 水平並びに変更
+            yanchor="bottom",
+            y=-0.2,               # グラフ下に配置（マイナス値で下へ）
+            xanchor="center",
+            x=0.5                 # 中央揃え
+        ),
     )
 
     st.plotly_chart(fig, use_container_width=True)
