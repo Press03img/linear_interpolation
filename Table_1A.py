@@ -123,7 +123,12 @@ def main():
         mode="markers+lines",
         name="Original Curve",
         marker=dict(color="blue", symbol="circle", size=8),
-        line=dict(color="gray", dash="dash")
+        line=dict(color="gray", dash="dash"),
+        hovertemplate=(
+            "温度: %{x:.1f} ℃<br>"
+            "許容引張応力: %{y:.2f} MPa<br>"
+            "<extra></extra>"
+        )
     ))
 
     fig.add_trace(go.Scatter(
