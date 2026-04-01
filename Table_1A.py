@@ -136,6 +136,10 @@ def main():
         st.error("データの不整合があり、補間できません。エクセルのデータを確認してください。")
 
     # グラフ描画
+    st.write("temp_values:", temp_values)
+    st.write("stress_values:", stress_values)
+    st.write("temp_input:", temp_input)
+    st.write("interpolated_value:", interpolated_value)
     fig, ax = plt.subplots(figsize=(8, 5))
     ax.scatter(temp_values, stress_values, label="Original Curve", color="blue", marker="o")
     ax.plot(temp_values, stress_values, linestyle="--", color="gray", alpha=0.7)
